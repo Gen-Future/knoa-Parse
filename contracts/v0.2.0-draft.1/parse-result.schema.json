@@ -1,0 +1,625 @@
+{
+  "$defs": {
+    "Artifact": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "role": {
+          "enum": [
+            "source",
+            "engine_result",
+            "derived"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "media_type": {
+          "title": "Media Type",
+          "type": "string"
+        },
+        "sha256": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        },
+        "size_bytes": {
+          "minimum": 0,
+          "title": "Size Bytes",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "id",
+        "role",
+        "media_type",
+        "sha256",
+        "size_bytes"
+      ],
+      "title": "Artifact",
+      "type": "object"
+    },
+    "Block": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "text",
+            "structured",
+            "table",
+            "image",
+            "transcript",
+            "description"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Text"
+        },
+        "data": {
+          "anyOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "items": {},
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Data"
+        },
+        "acquisition": {
+          "default": "native",
+          "enum": [
+            "native",
+            "ocr",
+            "asr",
+            "inferred"
+          ],
+          "title": "Acquisition",
+          "type": "string"
+        },
+        "locators": {
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "document_node": "#/$defs/DocumentNode",
+                "media_segment": "#/$defs/MediaSegment",
+                "page_region": "#/$defs/PageRegion",
+                "sheet_range": "#/$defs/SheetRange",
+                "structured_node": "#/$defs/StructuredNode",
+                "text_span": "#/$defs/TextSpan"
+              },
+              "propertyName": "kind"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/TextSpan"
+              },
+              {
+                "$ref": "#/$defs/StructuredNode"
+              },
+              {
+                "$ref": "#/$defs/DocumentNode"
+              },
+              {
+                "$ref": "#/$defs/SheetRange"
+              },
+              {
+                "$ref": "#/$defs/PageRegion"
+              },
+              {
+                "$ref": "#/$defs/MediaSegment"
+              }
+            ]
+          },
+          "minItems": 1,
+          "title": "Locators",
+          "type": "array"
+        },
+        "context_block_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Context Block Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "locators"
+      ],
+      "title": "Block",
+      "type": "object"
+    },
+    "Coverage": {
+      "additionalProperties": false,
+      "properties": {
+        "unit_id": {
+          "title": "Unit Id",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "completed",
+            "skipped",
+            "failed"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "issue_codes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Issue Codes",
+          "type": "array"
+        }
+      },
+      "required": [
+        "unit_id",
+        "status"
+      ],
+      "title": "Coverage",
+      "type": "object"
+    },
+    "DocumentNode": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_id": {
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "precision": {
+          "enum": [
+            "source_exact",
+            "derived_exact",
+            "estimated",
+            "unavailable"
+          ],
+          "title": "Precision",
+          "type": "string"
+        },
+        "kind": {
+          "const": "document_node",
+          "default": "document_node",
+          "title": "Kind",
+          "type": "string"
+        },
+        "pointer": {
+          "title": "Pointer",
+          "type": "string"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "precision",
+        "pointer"
+      ],
+      "title": "DocumentNode",
+      "type": "object"
+    },
+    "Issue": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "title": "Code",
+          "type": "string"
+        },
+        "message": {
+          "title": "Message",
+          "type": "string"
+        },
+        "severity": {
+          "enum": [
+            "warning",
+            "error"
+          ],
+          "title": "Severity",
+          "type": "string"
+        },
+        "unit_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Unit Id"
+        }
+      },
+      "required": [
+        "code",
+        "message",
+        "severity"
+      ],
+      "title": "Issue",
+      "type": "object"
+    },
+    "MediaSegment": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_id": {
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "precision": {
+          "enum": [
+            "source_exact",
+            "derived_exact",
+            "estimated",
+            "unavailable"
+          ],
+          "title": "Precision",
+          "type": "string"
+        },
+        "kind": {
+          "const": "media_segment",
+          "default": "media_segment",
+          "title": "Kind",
+          "type": "string"
+        },
+        "stream_id": {
+          "title": "Stream Id",
+          "type": "string"
+        },
+        "start_ms": {
+          "minimum": 0,
+          "title": "Start Ms",
+          "type": "integer"
+        },
+        "end_ms": {
+          "minimum": 0,
+          "title": "End Ms",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "precision",
+        "stream_id",
+        "start_ms",
+        "end_ms"
+      ],
+      "title": "MediaSegment",
+      "type": "object"
+    },
+    "PageRegion": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_id": {
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "precision": {
+          "enum": [
+            "source_exact",
+            "derived_exact",
+            "estimated",
+            "unavailable"
+          ],
+          "title": "Precision",
+          "type": "string"
+        },
+        "kind": {
+          "const": "page_region",
+          "default": "page_region",
+          "title": "Kind",
+          "type": "string"
+        },
+        "page": {
+          "minimum": 1,
+          "title": "Page",
+          "type": "integer"
+        },
+        "bbox": {
+          "items": {
+            "type": "number"
+          },
+          "maxItems": 4,
+          "minItems": 4,
+          "title": "Bbox",
+          "type": "array"
+        },
+        "unit": {
+          "enum": [
+            "pt",
+            "px",
+            "normalized"
+          ],
+          "title": "Unit",
+          "type": "string"
+        },
+        "origin": {
+          "enum": [
+            "top_left",
+            "bottom_left"
+          ],
+          "title": "Origin",
+          "type": "string"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "precision",
+        "page",
+        "bbox",
+        "unit",
+        "origin"
+      ],
+      "title": "PageRegion",
+      "type": "object"
+    },
+    "SheetRange": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_id": {
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "precision": {
+          "enum": [
+            "source_exact",
+            "derived_exact",
+            "estimated",
+            "unavailable"
+          ],
+          "title": "Precision",
+          "type": "string"
+        },
+        "kind": {
+          "const": "sheet_range",
+          "default": "sheet_range",
+          "title": "Kind",
+          "type": "string"
+        },
+        "sheet": {
+          "title": "Sheet",
+          "type": "string"
+        },
+        "a1_range": {
+          "pattern": "^[A-Z]+[1-9][0-9]*(?::[A-Z]+[1-9][0-9]*)?$",
+          "title": "A1 Range",
+          "type": "string"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "precision",
+        "sheet",
+        "a1_range"
+      ],
+      "title": "SheetRange",
+      "type": "object"
+    },
+    "Source": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "minLength": 1,
+          "title": "Id",
+          "type": "string"
+        },
+        "revision": {
+          "minLength": 1,
+          "title": "Revision",
+          "type": "string"
+        },
+        "filename": {
+          "minLength": 1,
+          "title": "Filename",
+          "type": "string"
+        },
+        "media_type": {
+          "title": "Media Type",
+          "type": "string"
+        },
+        "sha256": {
+          "pattern": "^[a-f0-9]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        },
+        "size_bytes": {
+          "minimum": 0,
+          "title": "Size Bytes",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "id",
+        "revision",
+        "filename",
+        "media_type",
+        "sha256",
+        "size_bytes"
+      ],
+      "title": "Source",
+      "type": "object"
+    },
+    "StructuredNode": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_id": {
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "precision": {
+          "enum": [
+            "source_exact",
+            "derived_exact",
+            "estimated",
+            "unavailable"
+          ],
+          "title": "Precision",
+          "type": "string"
+        },
+        "kind": {
+          "const": "structured_node",
+          "default": "structured_node",
+          "title": "Kind",
+          "type": "string"
+        },
+        "pointer": {
+          "title": "Pointer",
+          "type": "string"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "precision",
+        "pointer"
+      ],
+      "title": "StructuredNode",
+      "type": "object"
+    },
+    "TextSpan": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_id": {
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "precision": {
+          "enum": [
+            "source_exact",
+            "derived_exact",
+            "estimated",
+            "unavailable"
+          ],
+          "title": "Precision",
+          "type": "string"
+        },
+        "kind": {
+          "const": "text_span",
+          "default": "text_span",
+          "title": "Kind",
+          "type": "string"
+        },
+        "start": {
+          "minimum": 0,
+          "title": "Start",
+          "type": "integer"
+        },
+        "end": {
+          "minimum": 0,
+          "title": "End",
+          "type": "integer"
+        },
+        "unit": {
+          "const": "unicode_code_point",
+          "default": "unicode_code_point",
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "precision",
+        "start",
+        "end"
+      ],
+      "title": "TextSpan",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "0.2.0-draft.1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "source": {
+      "$ref": "#/$defs/Source"
+    },
+    "target": {
+      "const": "native_extract",
+      "default": "native_extract",
+      "title": "Target",
+      "type": "string"
+    },
+    "status": {
+      "enum": [
+        "completed",
+        "partial",
+        "failed"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "engine": {
+      "title": "Engine",
+      "type": "string"
+    },
+    "artifacts": {
+      "items": {
+        "$ref": "#/$defs/Artifact"
+      },
+      "minItems": 1,
+      "title": "Artifacts",
+      "type": "array"
+    },
+    "blocks": {
+      "items": {
+        "$ref": "#/$defs/Block"
+      },
+      "title": "Blocks",
+      "type": "array"
+    },
+    "coverage": {
+      "items": {
+        "$ref": "#/$defs/Coverage"
+      },
+      "minItems": 1,
+      "title": "Coverage",
+      "type": "array"
+    },
+    "issues": {
+      "items": {
+        "$ref": "#/$defs/Issue"
+      },
+      "title": "Issues",
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema_version",
+    "source",
+    "status",
+    "engine",
+    "artifacts",
+    "blocks",
+    "coverage",
+    "issues"
+  ],
+  "title": "ParseResult",
+  "type": "object",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://knoa.dev/contracts/parse/0.2.0-draft.1/parse-result.schema.json"
+}

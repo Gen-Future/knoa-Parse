@@ -1,0 +1,23 @@
+.DS_Store
+.idea/
+.vscode/
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+node_modules/
+dist/
+build/
+coverage/
+.cache/
+*.log
+# Local source material, model files and runtime data belong here.
+.local/
+*.egg-info/
+.venv-validation/

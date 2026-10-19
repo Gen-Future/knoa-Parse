@@ -1,0 +1,3 @@
+# Repository checks only; this is not the product runtime stack.
+jsonschema==4.26.0
+PyYAML==6.0.3

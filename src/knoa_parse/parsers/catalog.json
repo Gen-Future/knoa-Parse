@@ -1,0 +1,346 @@
+{
+  "schema_version": 2,
+  "status": "initial-runtime",
+  "model_policy": {
+    "local_model_inference": false,
+    "model_weight_downloads": false
+  },
+  "provider_capabilities": [
+    "ocr",
+    "asr",
+    "vision",
+    "document_analysis",
+    "text_model"
+  ],
+  "families": [
+    {
+      "id": "text",
+      "name": "文本",
+      "directory": "src/knoa_parse/parsers/text",
+      "status": "partially_implemented",
+      "enabled": true,
+      "priority": "P0",
+      "initial_extensions": [
+        ".txt",
+        ".md",
+        ".log",
+        ".rst",
+        ".py",
+        ".js",
+        ".java"
+      ],
+      "deferred_extensions": [
+        ".rmd",
+        ".qmd"
+      ],
+      "optional_external_capabilities": [],
+      "processors": [
+        "markup"
+      ],
+      "enabled_extensions": [
+        ".txt"
+      ]
+    },
+    {
+      "id": "structured",
+      "name": "结构化数据",
+      "directory": "src/knoa_parse/parsers/structured",
+      "status": "partially_implemented",
+      "enabled": true,
+      "priority": "P0",
+      "initial_extensions": [
+        ".json",
+        ".jsonl",
+        ".xml",
+        ".yaml",
+        ".yml"
+      ],
+      "deferred_extensions": [],
+      "optional_external_capabilities": [],
+      "processors": [
+        "markup"
+      ],
+      "enabled_extensions": [
+        ".json"
+      ]
+    },
+    {
+      "id": "pdf",
+      "name": "PDF",
+      "directory": "src/knoa_parse/parsers/pdf",
+      "status": "partially_implemented",
+      "enabled": true,
+      "priority": "P0",
+      "initial_extensions": [
+        ".pdf"
+      ],
+      "deferred_extensions": [],
+      "optional_external_capabilities": [
+        "ocr",
+        "document_analysis",
+        "vision"
+      ],
+      "processors": [
+        "pdf"
+      ],
+      "enabled_extensions": [
+        ".pdf"
+      ]
+    },
+    {
+      "id": "document",
+      "name": "Word 与流式文档",
+      "directory": "src/knoa_parse/parsers/document",
+      "status": "partially_implemented",
+      "enabled": true,
+      "priority": "P0",
+      "initial_extensions": [
+        ".docx"
+      ],
+      "deferred_extensions": [
+        ".doc",
+        ".odt",
+        ".rtf"
+      ],
+      "optional_external_capabilities": [
+        "ocr",
+        "vision",
+        "document_analysis"
+      ],
+      "processors": [
+        "office",
+        "markup"
+      ],
+      "enabled_extensions": [
+        ".docx"
+      ]
+    },
+    {
+      "id": "presentation",
+      "name": "PPT 与演示文稿",
+      "directory": "src/knoa_parse/parsers/presentation",
+      "status": "partially_implemented",
+      "enabled": true,
+      "priority": "P0",
+      "initial_extensions": [
+        ".pptx"
+      ],
+      "deferred_extensions": [
+        ".ppt",
+        ".odp",
+        ".key"
+      ],
+      "optional_external_capabilities": [
+        "ocr",
+        "vision"
+      ],
+      "processors": [
+        "office"
+      ],
+      "enabled_extensions": [
+        ".pptx"
+      ]
+    },
+    {
+      "id": "spreadsheet",
+      "name": "Excel 与表格",
+      "directory": "src/knoa_parse/parsers/spreadsheet",
+      "status": "partially_implemented",
+      "enabled": true,
+      "priority": "P0",
+      "initial_extensions": [
+        ".xlsx",
+        ".csv",
+        ".tsv"
+      ],
+      "deferred_extensions": [
+        ".xls",
+        ".xlsb",
+        ".ods"
+      ],
+      "optional_external_capabilities": [
+        "ocr",
+        "vision"
+      ],
+      "processors": [
+        "office"
+      ],
+      "enabled_extensions": [
+        ".xlsx"
+      ]
+    },
+    {
+      "id": "image",
+      "name": "图片",
+      "directory": "src/knoa_parse/parsers/image",
+      "status": "planned",
+      "enabled": false,
+      "priority": "P1",
+      "initial_extensions": [
+        ".png",
+        ".jpg",
+        ".jpeg",
+        ".webp",
+        ".tif",
+        ".tiff"
+      ],
+      "deferred_extensions": [
+        ".heic",
+        ".bmp",
+        ".gif"
+      ],
+      "optional_external_capabilities": [
+        "ocr",
+        "vision"
+      ],
+      "processors": [
+        "media"
+      ],
+      "enabled_extensions": []
+    },
+    {
+      "id": "audio",
+      "name": "音频",
+      "directory": "src/knoa_parse/parsers/audio",
+      "status": "planned",
+      "enabled": false,
+      "priority": "P1",
+      "initial_extensions": [
+        ".wav",
+        ".mp3",
+        ".m4a",
+        ".flac",
+        ".ogg"
+      ],
+      "deferred_extensions": [
+        ".aac",
+        ".opus"
+      ],
+      "optional_external_capabilities": [
+        "asr"
+      ],
+      "processors": [
+        "media"
+      ],
+      "enabled_extensions": []
+    },
+    {
+      "id": "video",
+      "name": "视频",
+      "directory": "src/knoa_parse/parsers/video",
+      "status": "planned",
+      "enabled": false,
+      "priority": "P1",
+      "initial_extensions": [
+        ".mp4",
+        ".mov",
+        ".mkv",
+        ".webm"
+      ],
+      "deferred_extensions": [
+        ".avi"
+      ],
+      "optional_external_capabilities": [
+        "asr",
+        "ocr",
+        "vision"
+      ],
+      "processors": [
+        "media"
+      ],
+      "enabled_extensions": []
+    },
+    {
+      "id": "web",
+      "name": "网页快照",
+      "directory": "src/knoa_parse/parsers/web",
+      "status": "planned",
+      "enabled": false,
+      "priority": "P1",
+      "initial_extensions": [
+        ".html",
+        ".htm"
+      ],
+      "deferred_extensions": [
+        ".mhtml",
+        ".mht"
+      ],
+      "optional_external_capabilities": [
+        "ocr",
+        "vision"
+      ],
+      "processors": [
+        "markup"
+      ],
+      "enabled_extensions": []
+    },
+    {
+      "id": "ebook",
+      "name": "电子书",
+      "directory": "src/knoa_parse/parsers/ebook",
+      "status": "planned",
+      "enabled": false,
+      "priority": "P2",
+      "initial_extensions": [
+        ".epub"
+      ],
+      "deferred_extensions": [
+        ".mobi",
+        ".azw3"
+      ],
+      "optional_external_capabilities": [
+        "ocr",
+        "vision"
+      ],
+      "processors": [
+        "containers",
+        "markup"
+      ],
+      "enabled_extensions": []
+    },
+    {
+      "id": "email",
+      "name": "邮件与邮件集",
+      "directory": "src/knoa_parse/parsers/email",
+      "status": "planned",
+      "enabled": false,
+      "priority": "P2",
+      "initial_extensions": [
+        ".eml",
+        ".mbox"
+      ],
+      "deferred_extensions": [
+        ".msg"
+      ],
+      "optional_external_capabilities": [],
+      "processors": [
+        "markup",
+        "containers"
+      ],
+      "enabled_extensions": []
+    },
+    {
+      "id": "archive",
+      "name": "压缩包与资料集",
+      "directory": "src/knoa_parse/parsers/archive",
+      "status": "planned",
+      "enabled": false,
+      "priority": "P2",
+      "initial_extensions": [
+        ".zip",
+        ".tar",
+        ".tar.gz",
+        ".tgz"
+      ],
+      "deferred_extensions": [
+        ".7z",
+        ".rar"
+      ],
+      "optional_external_capabilities": [],
+      "processors": [
+        "containers"
+      ],
+      "enabled_extensions": []
+    }
+  ]
+}

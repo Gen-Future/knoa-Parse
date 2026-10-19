@@ -1,0 +1,51 @@
+{
+  "schema_version": "0.2.0-draft.1",
+  "source": {
+    "id": "source-example",
+    "revision": "57beb0e289070d9847305e845d4ada16f28c445a1a51ec1bb90925ab5c1f8327",
+    "filename": "source.txt",
+    "media_type": "text/plain",
+    "sha256": "57beb0e289070d9847305e845d4ada16f28c445a1a51ec1bb90925ab5c1f8327",
+    "size_bytes": 36
+  },
+  "target": "native_extract",
+  "status": "completed",
+  "engine": "knoa-text/1",
+  "artifacts": [
+    {
+      "id": "source-example",
+      "role": "source",
+      "media_type": "text/plain",
+      "sha256": "57beb0e289070d9847305e845d4ada16f28c445a1a51ec1bb90925ab5c1f8327",
+      "size_bytes": 36
+    }
+  ],
+  "blocks": [
+    {
+      "id": "text-1",
+      "kind": "text",
+      "text": "Knoa 解析样例\n保留来源 😀\n",
+      "data": null,
+      "acquisition": "native",
+      "locators": [
+        {
+          "artifact_id": "source-example",
+          "precision": "source_exact",
+          "kind": "text_span",
+          "start": 0,
+          "end": 17,
+          "unit": "unicode_code_point"
+        }
+      ],
+      "context_block_ids": []
+    }
+  ],
+  "coverage": [
+    {
+      "unit_id": "document",
+      "status": "completed",
+      "issue_codes": []
+    }
+  ],
+  "issues": []
+}

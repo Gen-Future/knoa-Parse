@@ -1,0 +1,5 @@
+{
+  "active": "0.2.0-draft.1",
+  "versions": ["0.1.0-draft.1", "0.2.0-draft.1"],
+  "compatibility": "Version 0.2 is a separate draft. Consumers must explicitly negotiate it; no implicit legacy projection."
+}

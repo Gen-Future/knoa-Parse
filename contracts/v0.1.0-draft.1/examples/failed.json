@@ -1,0 +1,23 @@
+{
+  "schema_version": "0.1.0-draft.1",
+  "parse_id": "parse-synthetic-002",
+  "source": {
+    "source_id": "source-synthetic-001",
+    "revision": "revision-1",
+    "content_sha256": "7354678339fb7323cad4d730bf56355e2718d7680397ef06d5376a550d54f164",
+    "media_type": "text/plain"
+  },
+  "parser": {
+    "name": "synthetic-fixture",
+    "version": "0.0.0"
+  },
+  "status": "failed",
+  "evidence": [],
+  "errors": [
+    {
+      "code": "PARSER_UNAVAILABLE",
+      "message": "合成失败示例：解析器暂不可用。",
+      "retryable": true
+    }
+  ]
+}

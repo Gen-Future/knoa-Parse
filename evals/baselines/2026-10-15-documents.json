@@ -1,0 +1,159 @@
+{
+  "date": "2026-10-15",
+  "scope": "Initial native DOCX/PPTX/XLSX/PDF paths; not OCR/layout or universal Office fidelity",
+  "python": "3.12.11",
+  "platform": "darwin",
+  "dependency_lock_sha256": "6f885ace1718a280a6bfb2d0481534ea550fbf09e18a7feb41dc278bb2c72fb3",
+  "universal_lock_package_records": 66,
+  "installed_unique_distributions": 61,
+  "venv_logical_file_bytes": 260155599,
+  "upstream_experiment": {
+    "candidate": "docling-slim[convert-core,format-docx,format-pptx,format-xlsx,format-pdf-docling]==2.139.0",
+    "python": "3.12.11",
+    "dependency_audit": {
+      "passed": true,
+      "packages": {
+        "annotated-doc": "0.0.5",
+        "annotated-types": "0.8.0",
+        "attrs": "26.1.0",
+        "certifi": "2026.7.22",
+        "charset-normalizer": "3.5.2",
+        "defusedxml": "0.7.1",
+        "doclang": "0.7.3",
+        "docling-core": "2.101.1",
+        "docling-parse": "7.22.3",
+        "docling-slim": "2.139.0",
+        "et-xmlfile": "2.0.0",
+        "filetype": "1.2.0",
+        "idna": "3.20",
+        "jsonref": "1.1.0",
+        "jsonschema": "4.26.0",
+        "jsonschema-specifications": "2025.9.1",
+        "langcodes": "3.5.1",
+        "latex2mathml": "3.81.1",
+        "lxml": "6.1.3",
+        "markdown-it-py": "4.2.0",
+        "mdurl": "0.1.2",
+        "numpy": "2.5.4",
+        "openpyxl": "3.1.5",
+        "pandas": "3.0.6",
+        "pillow": "12.3.0",
+        "pluggy": "1.6.0",
+        "pydantic": "2.13.1",
+        "pydantic-core": "2.46.1",
+        "pydantic-settings": "2.16.0",
+        "pygments": "2.21.0",
+        "pylatexenc": "2.11",
+        "python-dateutil": "2.9.0.post0",
+        "python-docx": "1.2.0",
+        "python-dotenv": "1.2.4",
+        "python-pptx": "1.0.2",
+        "pyyaml": "6.0.3",
+        "referencing": "0.37.0",
+        "requests": "2.34.2",
+        "rich": "15.0.0",
+        "rpds-py": "2026.9.1",
+        "rtree": "1.4.1",
+        "scipy": "1.18.1",
+        "shellingham": "1.5.4",
+        "six": "1.17.0",
+        "tabulate": "0.10.0",
+        "tqdm": "4.70.1",
+        "typer": "0.26.8",
+        "typing-extensions": "4.16.0",
+        "typing-inspection": "0.4.4",
+        "urllib3": "2.8.0",
+        "xlsxwriter": "3.2.9"
+      },
+      "issues": []
+    },
+    "cases": [
+      {
+        "filename": "sample.docx",
+        "sha256": "47dc1d986617b1e3df692ffcd97babe032ed772a98da83882b38a02cbc96736b",
+        "status": "success",
+        "elapsed_seconds": 1.183595999958925,
+        "items": 7,
+        "issues": [],
+        "artifact": "upstream-0.json"
+      },
+      {
+        "filename": "sample.pptx",
+        "sha256": "af4a2f707842d5022c659b11aa147b4ad25689a30374724ea8082600066b4145",
+        "status": "success",
+        "elapsed_seconds": 0.004366791981738061,
+        "items": 4,
+        "issues": [],
+        "artifact": "upstream-1.json"
+      },
+      {
+        "filename": "sample.xlsx",
+        "sha256": "58298669bc9bbe7b4b033ef79df643d1c115c2196a0978a0e0ea9134fb282c8c",
+        "status": "success",
+        "elapsed_seconds": 0.003334583016112447,
+        "items": 4,
+        "issues": [],
+        "artifact": "upstream-2.json"
+      },
+      {
+        "filename": "sample.pdf",
+        "sha256": "9c385b0a4e231678d8b20e0babe36d19c2572c498cd5b0c1d0946fb32f1ec334",
+        "status": "success",
+        "elapsed_seconds": 0.03736791602568701,
+        "items": 2,
+        "issues": [],
+        "artifact": "upstream-3.json"
+      }
+    ],
+    "status": "observed",
+    "conversion_is_full_acceptance": false,
+    "inference_modules_loaded": [],
+    "note": "Conversion alone is not acceptance; compare structure, provenance and Excel semantics.",
+    "denied_network_or_process_events": [
+      {
+        "event": "subprocess.Popen",
+        "command": [
+          "uname",
+          "-p"
+        ]
+      },
+      {
+        "event": "subprocess.Popen",
+        "command": [
+          "file",
+          "-b",
+          "<python-interpreter>"
+        ]
+      }
+    ],
+    "unexpected_denials": [],
+    "elapsed_seconds": 1.2338807079941034,
+    "process_peak_rss_bytes": 170983424
+  },
+  "semantic_and_worker_tests": {
+    "passed": 51,
+    "document_tests": 12,
+    "framework": "unittest"
+  },
+  "model_cache_files": [],
+  "limitations": [
+    "Synthetic acceptance set; no accuracy score or universal Office fidelity claim",
+    "PDF order is unresolved; no table/layout/OCR inference",
+    "Word and slide positions refer to retained upstream tree, not original XML or shape IDs",
+    "Per-case times share one process; OS page cache was not cleared",
+    "Worker does not provide a full OS sandbox; no external providers integrated"
+  ],
+  "base_environment": {
+    "groups": [
+      "api",
+      "dev"
+    ],
+    "logical_file_bytes": 18076777,
+    "installed_unique_distributions": 24,
+    "executed_tests": 39,
+    "skipped_document_tests_at_measurement": 11
+  },
+  "validation_notes": [
+    "A fixture setup previously returned result_not_ready; original job diagnostics were not captured. Added per-format job-state diagnostics and cleanup; subsequent full 51-test run passed. Cause remains unconfirmed."
+  ]
+}

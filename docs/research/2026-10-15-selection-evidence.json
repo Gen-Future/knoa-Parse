@@ -1,0 +1,304 @@
+{
+  "inspected_on": "2026-10-15",
+  "scope": "Source, dependency metadata, selected upstream tests and release metadata; no runtime benchmark or installed dependency closure verified.",
+  "notes": [
+    "blob_sha identifies a file, not a repository commit.",
+    "Default-branch sources are observations, not production version pins.",
+    "Terminal PyPI metadata access failed with DNS resolution; browser and GitHub connector reads succeeded.",
+    "No third-party runtime package or source code was installed or vendored."
+  ],
+  "sources": [
+    {
+      "repository": "microsoft/markitdown",
+      "path": "packages/markitdown/pyproject.toml",
+      "ref": "default branch at inspection",
+      "blob_sha": "43144043da5706adcc0263dcb2218acbd8af8fcd",
+      "url": "https://github.com/microsoft/markitdown/blob/main/packages/markitdown/pyproject.toml",
+      "returned_line_count": 117
+    },
+    {
+      "repository": "Unstructured-IO/unstructured",
+      "path": "pyproject.toml",
+      "ref": "default branch at inspection",
+      "blob_sha": "3339ee23e8fed1ea77f16d1912520044bbfc0f99",
+      "url": "https://github.com/Unstructured-IO/unstructured/blob/main/pyproject.toml",
+      "returned_line_count": 279
+    },
+    {
+      "repository": "Unstructured-IO/unstructured",
+      "path": "unstructured/nlp/tokenize.py",
+      "ref": "default branch at inspection",
+      "blob_sha": "5bcf60a5d74e1898dde752d433108fb1abefcbb7",
+      "url": "https://github.com/Unstructured-IO/unstructured/blob/main/unstructured/nlp/tokenize.py",
+      "returned_line_count": 218
+    },
+    {
+      "repository": "Unstructured-IO/unstructured",
+      "path": "unstructured/partition/xlsx.py",
+      "ref": "default branch at inspection",
+      "blob_sha": "12a7e09eb0224994e4194764be94f513b43a007a",
+      "url": "https://github.com/Unstructured-IO/unstructured/blob/main/unstructured/partition/xlsx.py",
+      "returned_line_count": 571
+    },
+    {
+      "repository": "opendatalab/MinerU",
+      "path": "pyproject.toml",
+      "ref": "default branch at inspection",
+      "blob_sha": "5a22e23d6aaf2c6d24937b063c310614fdb390e4",
+      "url": "https://github.com/opendatalab/MinerU/blob/master/pyproject.toml",
+      "returned_line_count": 194
+    },
+    {
+      "repository": "datalab-to/marker",
+      "path": "pyproject.toml",
+      "ref": "default branch at inspection",
+      "blob_sha": "5688de67cfdd108c9afbf3525971cee7edfca09c",
+      "url": "https://github.com/datalab-to/marker/blob/master/pyproject.toml",
+      "returned_line_count": 80
+    },
+    {
+      "repository": "HKUDS/RAG-Anything",
+      "path": "pyproject.toml",
+      "ref": "default branch at inspection",
+      "blob_sha": "5bef806b8947ea85d8f2d05f0d34beba4f0b570f",
+      "url": "https://github.com/HKUDS/RAG-Anything/blob/main/pyproject.toml",
+      "returned_line_count": 98
+    },
+    {
+      "repository": "myhloli/DocVortex",
+      "path": "pyproject.toml",
+      "ref": "default branch at inspection",
+      "blob_sha": "36b0498a9a4e2ecb9792d9c9c1d35ca257ed6ec4",
+      "url": "https://github.com/myhloli/DocVortex/blob/main/pyproject.toml",
+      "returned_line_count": 66
+    },
+    {
+      "repository": "myhloli/DocVortex",
+      "path": "docs/USAGE.md",
+      "ref": "default branch at inspection",
+      "blob_sha": "ce02fc6289f02e6e969d6b84af635244c6e64deb",
+      "url": "https://github.com/myhloli/DocVortex/blob/main/docs/USAGE.md",
+      "returned_line_count": 406
+    },
+    {
+      "repository": "kreuzberg-dev/kreuzberg-lts",
+      "path": "Cargo.toml",
+      "ref": "default branch at inspection",
+      "blob_sha": "47ae0bec216f8c3853570d0675611c55ab969c09",
+      "url": "https://github.com/kreuzberg-dev/kreuzberg-lts/blob/main/Cargo.toml",
+      "returned_line_count": 132
+    },
+    {
+      "repository": "xberg-io/xberg",
+      "path": "crates/xberg-py/Cargo.toml",
+      "ref": "default branch at inspection",
+      "blob_sha": "281f71a960e6f3d3c4d8bb6b0620ca42fbd2ffcd",
+      "url": "https://github.com/xberg-io/xberg/blob/main/crates/xberg-py/Cargo.toml",
+      "returned_line_count": 108
+    },
+    {
+      "repository": "adbar/trafilatura",
+      "path": "pyproject.toml",
+      "ref": "default branch at inspection",
+      "blob_sha": "5674a28185efd02a473631f7975b349704ac5c69",
+      "url": "https://github.com/adbar/trafilatura/blob/master/pyproject.toml",
+      "returned_line_count": 220
+    },
+    {
+      "repository": "adbar/trafilatura",
+      "path": "trafilatura/core.py",
+      "ref": "default branch at inspection",
+      "blob_sha": "50804bce9979c1f5e6dcc6f4444e6a1b726ae29f",
+      "url": "https://github.com/adbar/trafilatura/blob/master/trafilatura/core.py",
+      "returned_line_count": 729
+    },
+    {
+      "repository": "adbar/trafilatura",
+      "path": "tests/README.rst",
+      "ref": "default branch at inspection",
+      "blob_sha": "af71f9fb049d9aa92454588eb77b2a61b2006d77",
+      "url": "https://github.com/adbar/trafilatura/blob/master/tests/README.rst",
+      "returned_line_count": 88
+    },
+    {
+      "repository": "Breakthrough/PySceneDetect",
+      "path": "pyproject.toml",
+      "ref": "default branch at inspection",
+      "blob_sha": "88f2f034b6afe8e763772095f0a729b722003a2a",
+      "url": "https://github.com/Breakthrough/PySceneDetect/blob/main/pyproject.toml",
+      "returned_line_count": 174
+    },
+    {
+      "repository": "Breakthrough/PySceneDetect",
+      "path": "packaging/variants/pyproject-scenedetect-headless.toml",
+      "ref": "default branch at inspection",
+      "blob_sha": "67733bc0f50a8ba0ae0f784106937975fa7e8f63",
+      "url": "https://github.com/Breakthrough/PySceneDetect/blob/main/packaging/variants/pyproject-scenedetect-headless.toml",
+      "returned_line_count": 83
+    },
+    {
+      "repository": "docling-project/docling-core",
+      "path": "pyproject.toml",
+      "ref": "default branch at inspection",
+      "blob_sha": "166882236598489ff12a583e6ea585b45840ea5d",
+      "url": "https://github.com/docling-project/docling-core/blob/main/pyproject.toml",
+      "returned_line_count": 263
+    },
+    {
+      "repository": "docling-project/docling",
+      "path": "tests/test_backend_msexcel.py",
+      "ref": "default branch at inspection",
+      "blob_sha": "1e0a96cebd355ab0583b6293cfe583380d2c7d45",
+      "url": "https://github.com/docling-project/docling/blob/main/tests/test_backend_msexcel.py",
+      "returned_line_count": 1112
+    },
+    {
+      "repository": "docling-project/docling",
+      "path": "tests/test_backend_msword.py",
+      "ref": "default branch at inspection",
+      "blob_sha": "314fa1c6f35ff32d1f412b2cb5651945e7f4495f",
+      "url": "https://github.com/docling-project/docling/blob/main/tests/test_backend_msword.py",
+      "returned_line_count": 2643
+    },
+    {
+      "repository": "docling-project/docling",
+      "path": "docling/datamodel/backend_options.py",
+      "ref": "default branch at inspection",
+      "blob_sha": "2126dd2f2cd6ffb933cf91d93ccf3a75a73eb321",
+      "url": "https://github.com/docling-project/docling/blob/main/docling/datamodel/backend_options.py",
+      "returned_line_count": 850
+    },
+    {
+      "repository": "docling-project/docling",
+      "path": "docling/pipeline/base_pipeline.py",
+      "ref": "default branch at inspection",
+      "blob_sha": "1ea13af79f7a8ec83ac0b7fbe9616c5bebb5bb97",
+      "url": "https://github.com/docling-project/docling/blob/main/docling/pipeline/base_pipeline.py",
+      "returned_line_count": 487
+    },
+    {
+      "repository": "docling-project/docling",
+      "path": "docling/document_converter.py",
+      "ref": "default branch at inspection",
+      "blob_sha": "35bc9663200c56095be4754ad8de53133acc1f50",
+      "url": "https://github.com/docling-project/docling/blob/main/docling/document_converter.py",
+      "returned_line_count": 1055
+    },
+    {
+      "repository": "apache/tika",
+      "path": "tika-parsers/tika-parsers-standard/tika-parsers-standard-package/pom.xml",
+      "ref": "default branch at inspection",
+      "blob_sha": "8bbf2e9a3c167db2ba87b30955965c8ee63fb1bd",
+      "url": "https://github.com/apache/tika/blob/main/tika-parsers/tika-parsers-standard/tika-parsers-standard-package/pom.xml",
+      "returned_line_count": 168
+    },
+    {
+      "repository": "google/magika",
+      "path": "python/pyproject.toml",
+      "ref": "default branch at inspection",
+      "blob_sha": "c6dfad3d848748528536cbe91c4b228121e72ed2",
+      "url": "https://github.com/google/magika/blob/main/python/pyproject.toml",
+      "returned_line_count": 101
+    },
+    {
+      "repository": "kreuzberg-dev/kreuzberg-lts",
+      "path": "crates/kreuzberg-py/Cargo.toml",
+      "ref": "default branch at inspection",
+      "blob_sha": "a2b7055b983af141b3dfdbcb1ea6ba6576b4407c",
+      "url": "https://github.com/kreuzberg-dev/kreuzberg-lts/blob/main/crates/kreuzberg-py/Cargo.toml",
+      "returned_line_count": 36
+    },
+    {
+      "repository": "kreuzberg-dev/kreuzberg-lts",
+      "path": "crates/kreuzberg/Cargo.toml",
+      "ref": "default branch at inspection",
+      "blob_sha": "fa5297146b5972dcef380777f25f8bfce53a0399",
+      "url": "https://github.com/kreuzberg-dev/kreuzberg-lts/blob/main/crates/kreuzberg/Cargo.toml",
+      "returned_line_count": 362
+    },
+    {
+      "repository": "Breakthrough/PySceneDetect",
+      "path": "scenedetect/detectors/adaptive_detector.py",
+      "ref": "default branch at inspection",
+      "blob_sha": "8f3f580055da8feafad404d8dc50dc0a84d79218",
+      "url": "https://github.com/Breakthrough/PySceneDetect/blob/main/scenedetect/detectors/adaptive_detector.py",
+      "returned_line_count": 145
+    },
+    {
+      "repository": "Breakthrough/PySceneDetect",
+      "path": "tests/test_detectors.py",
+      "ref": "default branch at inspection",
+      "blob_sha": "6754d9107afc9e09a0d106463b4aa0181aaffad8",
+      "url": "https://github.com/Breakthrough/PySceneDetect/blob/main/tests/test_detectors.py",
+      "returned_line_count": 295
+    },
+    {
+      "repository": "HKUDS/RAG-Anything",
+      "path": "raganything/modalprocessors.py",
+      "ref": "default branch at inspection",
+      "blob_sha": "1a00e588428106a32e9525814773b20d7cf3d833",
+      "url": "https://github.com/HKUDS/RAG-Anything/blob/main/raganything/modalprocessors.py",
+      "returned_line_count": 370,
+      "requested_line_range": [
+        1,
+        370
+      ]
+    },
+    {
+      "repository": "docling-project/docling",
+      "path": "pyproject.toml",
+      "ref": "6b77e54c8c83ac46c9c0aa126e2761f57c93e44e",
+      "blob_sha": "f1094732fe7d99d0c099952dda8274c3786d2228",
+      "url": "https://github.com/docling-project/docling/blob/6b77e54c8c83ac46c9c0aa126e2761f57c93e44e/pyproject.toml",
+      "returned_line_count": 536
+    },
+    {
+      "repository": "docling-project/docling",
+      "path": "docling/backend/msexcel_backend.py",
+      "ref": "6b77e54c8c83ac46c9c0aa126e2761f57c93e44e",
+      "blob_sha": "a485006455d5cfda795dfd3704a41de222b06e05",
+      "url": "https://github.com/docling-project/docling/blob/6b77e54c8c83ac46c9c0aa126e2761f57c93e44e/docling/backend/msexcel_backend.py",
+      "returned_line_count": 1992
+    },
+    {
+      "repository": "docling-project/docling",
+      "path": "docling/backend/msword_backend.py",
+      "ref": "6b77e54c8c83ac46c9c0aa126e2761f57c93e44e",
+      "blob_sha": "c0324f6fb186a0c87d06e95d879e111663c877d2",
+      "url": "https://github.com/docling-project/docling/blob/6b77e54c8c83ac46c9c0aa126e2761f57c93e44e/docling/backend/msword_backend.py",
+      "returned_line_count": 4837
+    },
+    {
+      "repository": "docling-project/docling",
+      "path": "docling/backend/mspowerpoint_backend.py",
+      "ref": "6b77e54c8c83ac46c9c0aa126e2761f57c93e44e",
+      "blob_sha": "e641f138d61c1e583bdb9ead5c902a80f237f1b4",
+      "url": "https://github.com/docling-project/docling/blob/6b77e54c8c83ac46c9c0aa126e2761f57c93e44e/docling/backend/mspowerpoint_backend.py",
+      "returned_line_count": 2232
+    },
+    {
+      "repository": "docling-project/docling",
+      "path": "docling/pipeline/native_pdf_pipeline.py",
+      "ref": "6b77e54c8c83ac46c9c0aa126e2761f57c93e44e",
+      "blob_sha": "cb744c355f0d2f747579a2d2bb5dcc417a087e48",
+      "url": "https://github.com/docling-project/docling/blob/6b77e54c8c83ac46c9c0aa126e2761f57c93e44e/docling/pipeline/native_pdf_pipeline.py",
+      "returned_line_count": 443
+    }
+  ],
+  "release_references": [
+    {
+      "package": "docling-slim",
+      "version": "2.139.0",
+      "url": "https://pypi.org/project/docling-slim/2.139.0/",
+      "publishing_commit": "6b77e54c8c83ac46c9c0aa126e2761f57c93e44e",
+      "runtime_verified": false
+    },
+    {
+      "package": "scenedetect-headless",
+      "version": "0.7.2",
+      "url": "https://pypi.org/project/scenedetect-headless/0.7.2/",
+      "publishing_commit": "7cd1005e8349d8e913d0930fc1750363eb4ddc51",
+      "runtime_verified": false
+    }
+  ]
+}

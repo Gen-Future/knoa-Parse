@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=82,<83"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "knoa-parse"
+version = "0.1.0.dev0"
+description = "Traceable parsing with native tools and external model services"
+readme = "README.md"
+requires-python = ">=3.11,<3.14"
+dependencies = ["pydantic==2.13.1", "packaging==26.1"]
+
+[project.optional-dependencies]
+api = ["fastapi==0.135.3", "uvicorn==0.44.0"]
+documents = [
+  "docling-slim[convert-core,format-docx,format-pptx,format-xlsx,format-pdf-docling]==2.139.0",
+]
+
+[dependency-groups]
+dev = ["jsonschema==4.26.0", "PyYAML==6.0.3", "httpx==0.28.1", "packaging==26.1"]
+
+[project.scripts]
+knoa-parse = "knoa_parse.apps.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+"knoa_parse.parsers" = ["catalog.json"]
+
+[tool.uv]
+default-groups = ["dev"]

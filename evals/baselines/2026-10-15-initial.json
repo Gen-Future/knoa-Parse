@@ -1,0 +1,60 @@
+{
+  "date": "2026-10-15",
+  "scope": "Initial TXT/JSON implementation; not document-engine acceptance",
+  "python": "3.11.15",
+  "environment": "Existing environment; clean Python 3.12 sync blocked",
+  "base_dependency_audit": {
+    "passed": true,
+    "packages": {
+      "annotated-types": "0.7.0",
+      "pydantic": "2.13.1",
+      "pydantic-core": "2.46.1",
+      "typing-extensions": "4.15.0",
+      "typing-inspection": "0.4.2"
+    },
+    "issues": []
+  },
+  "document_dependency_audit": {
+    "passed": false,
+    "packages": {},
+    "issues": [
+      {
+        "code": "missing_dependency",
+        "name": "docling-slim",
+        "parent": null
+      }
+    ]
+  },
+  "lockfile_created": false,
+  "upstream_document_runtime_executed": false,
+  "network_attempts": [
+    "PyPI DNS failed in sandbox",
+    "PyPI connection failed with escalated network",
+    "Offline uv resolution failed: dependencies absent from cache"
+  ],
+  "runtime_tests": {
+    "passed": 37,
+    "framework": "unittest"
+  },
+  "performance_baseline": null,
+  "wheel_build": "local setuptools build succeeded",
+  "api_dependency_audit": {
+    "passed": true,
+    "packages": {
+      "annotated-doc": "0.0.4",
+      "annotated-types": "0.7.0",
+      "anyio": "4.13.0",
+      "click": "8.3.2",
+      "fastapi": "0.135.3",
+      "h11": "0.16.0",
+      "idna": "3.11",
+      "pydantic": "2.13.1",
+      "pydantic-core": "2.46.1",
+      "starlette": "1.0.0",
+      "typing-extensions": "4.15.0",
+      "typing-inspection": "0.4.2",
+      "uvicorn": "0.44.0"
+    },
+    "issues": []
+  }
+}

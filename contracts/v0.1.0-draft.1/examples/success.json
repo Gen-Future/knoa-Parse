@@ -1,0 +1,36 @@
+{
+  "schema_version": "0.1.0-draft.1",
+  "parse_id": "parse-synthetic-001",
+  "source": {
+    "source_id": "source-synthetic-001",
+    "revision": "revision-1",
+    "content_sha256": "7354678339fb7323cad4d730bf56355e2718d7680397ef06d5376a550d54f164",
+    "media_type": "text/plain"
+  },
+  "parser": {
+    "name": "synthetic-fixture",
+    "version": "0.0.0"
+  },
+  "status": "completed",
+  "evidence": [
+    {
+      "id": "evidence-001",
+      "text": "这是一份合成资料。",
+      "location": {
+        "kind": "text",
+        "start": 0,
+        "end": 9
+      }
+    },
+    {
+      "id": "evidence-002",
+      "text": "Knoa 支持个人、团队与组织。",
+      "location": {
+        "kind": "text",
+        "start": 10,
+        "end": 26
+      }
+    }
+  ],
+  "errors": []
+}
