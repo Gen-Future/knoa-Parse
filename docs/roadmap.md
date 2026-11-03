@@ -42,6 +42,7 @@
 - [x] M3-D：Renderer 注入边界、Source 完整性预检、页数/像素/单页/总输出预算和 M3-C 原子接入；见 [开发后记录](../testing/records/2026-11-02-m3d-renderer-boundary.md)。不包含具体渲染库。
 - [x] M3-E-基础：Provider 调用账目模型、状态不变量、unknown/query/manual 恢复决策和重试闸门；见 [开发后记录](../testing/records/2026-11-03-m3e-invocation-recovery.md)。未持久化、未接入真实服务。
 - [x] M3-F-基础：SQLite schema 迁移、账目幂等写入、状态迁移、并发冲突和 read-only 查询；见 [开发后记录](../testing/records/2026-11-03-m3f-ledger-store.md)。未接入 worker/真实服务。
+- [x] M3-G-基础：Provider 调用生命周期协调器，统一计划、提交、成功/失败/unknown/取消、显式 retry 和恢复查询；见 [开发后记录](../testing/records/2026-11-03-m3g-invocation-coordinator.md)。未接入 worker/真实服务。
 - [ ] M3-B-产品：真实服务选型与适配、页图准备/映射、原始响应持久化、新目标契约、页级恢复和产品路由；同步时限与费用预算需按服务能力进一步落实。
 - [ ] 选服务后真实联调；扫描/复杂 PDF 通过效果验收才启用。
 

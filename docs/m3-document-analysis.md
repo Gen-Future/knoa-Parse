@@ -20,6 +20,8 @@ M3-E 的 `core/provider_runs.py` 定义调用账目、远端引用、用量和 `
 
 M3-F 将 `InvocationRecord` 持久化到 Store 的 `provider_invocations` 表，并用 `schema_meta` 标记 schema 版本 2。写入使用 `(run_id, unit_id)` 唯一约束、expected-state 检查和 SQLite 事务；read-only Store 只能查询。该表尚未由 worker 创建或更新，也不通过 API 暴露。
 
+M3-G 的 `enrichment/invocations.py` 提供 `InvocationCoordinator`，把 lifecycle 写入和 `decide_recovery()` 集中到一个内部入口。它不会调用 Provider；成功状态必须由调用方提供已经发布或可绑定的 response artifact ID，unknown 不会自动转成 failed 或 retry。
+
 这里不渲染 PDF，不验证图片解码尺寸与原 PDF 页框的一致性，不处理裁切/旋转/EXIF。尺寸与 full_page_upright 映射由可信调用方负责。正式接入前需要真实页图准备与几何校验，不可直接把网络用户提供的尺寸当权威来源。合成 fixture 的字节不是实际 PDF/页图，只证明编排语义。
 
 ## 合并、定位与上下文

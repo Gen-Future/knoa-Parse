@@ -61,6 +61,8 @@ Windows 完整环境通过 60 项回归和全部 15 个扩展样例；独立基�
 
 2026-11-03 M3-F 基础完成调用账目 SQLite 持久化：旧数据库幂等迁移到 schema 版本 2，新增 `provider_invocations` 表；支持按 run/unit 唯一约束、expected-state、合法状态迁移、attempt/billing 防回退、并发冲突和 read-only 查询。7 项专项测试通过；账目尚未接入 worker/API，真实远端恢复、账单和保留策略仍未完成。
 
+2026-11-03 M3-G 基础完成 Provider 调用生命周期协调器：统一计划批次、提交、成功、失败、unknown、取消、显式 retry 和恢复查询；5 项专项测试通过。Coordinator 不调用 Provider、不接 worker/API，成功结果要求调用方提供 response artifact ID，OCR/document_understanding 仍未开放。
+
 2026-10-19 M3-A 完成外部文档分析同步单页内部协议、整批来源/预算预检、坐标换算、页级独立合并、同页上下文及脱敏调用记录；取消/超时后不发布该次内容、不自动重试，未知费用和用量保持未知。mock 只在显式 dry_run 下使用，未进入 API/worker 或产品能力清单，未改变 native_extract、0.2 契约、主仓快照或依赖锁。完整 Windows 回归 108 项通过，后补两项防护测试后 M3 模块 20 项在完整及无文档基础环境均通过；4 项前端测试与依赖审计通过。实现和下一步限制见 [M3-A](m3-document-analysis.md)，开发前/后需求及执行记录收录在 testing。真实服务、页图渲染/几何验收、原始响应持久化、远端恢复、费用预算和新目标契约尚未完成，不能称为真实扫描识别已开放。
 
 2026-10-19 按用户要求改为单用户 Demo 免鉴权：API/console factory 不再启用工作台 token，旧 api_token 配置及 KNOA_PARSE_API_TOKEN 不再影响 Demo 入口；本地服务配置移除令牌。前端移除登录弹窗和 Authorization 请求头，打开页面自动加载，失败时直接重连。模型平台 API Key 与供应商鉴权保持独立。免登录上传/任务执行/结果与产物下载、模型配置读写通过验证，浏览器刷新后直接进入工作台与可编辑模型设置；实际 8765 服务已更新。完整 90 项 Python 回归、4 项前端逻辑测试、JS 语法及文档/契约检查通过。
