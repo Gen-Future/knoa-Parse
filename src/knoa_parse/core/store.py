@@ -245,6 +245,37 @@ class Store:
                 raise ParseError("invocation_conflict", "Invocation changed concurrently", 409)
             return record
 
+    def insert_invocations(self, records: list[InvocationRecord]) -> list[InvocationRecord]:
+        """Atomically insert a new planned batch; identical existing rows are idempotent."""
+        if self.read_only:
+            raise ParseError("read_only", "Read-only store cannot write invocation records", 403)
+        if not records:
+            raise ParseError("invalid_invocation_batch", "Invocation batch cannot be empty")
+        normalized = [InvocationRecord.model_validate(record.model_dump()) for record in records]
+        if any(record.state != "planned" for record in normalized):
+            raise ParseError("invalid_invocation_batch", "Only planned records can be inserted as a batch")
+        ids = [record.id for record in normalized]
+        units = [(record.run_id, record.unit_id) for record in normalized]
+        if len(ids) != len(set(ids)) or len(units) != len(set(units)):
+            raise ParseError("invocation_conflict", "Invocation batch contains duplicate identities", 409)
+        now = time.time()
+        with self.connection() as db:
+            db.execute("BEGIN IMMEDIATE")
+            for record in normalized:
+                row = db.execute("SELECT * FROM provider_invocations WHERE id=? OR (run_id=? AND unit_id=?)",
+                                 (record.id, record.run_id, record.unit_id)).fetchone()
+                if row is not None and row["body"] != record.model_dump_json():
+                    raise ParseError("invocation_conflict", "Invocation batch conflicts with an existing record", 409)
+            for record in normalized:
+                exists = db.execute("SELECT 1 FROM provider_invocations WHERE id=?", (record.id,)).fetchone()
+                if exists is None:
+                    body = record.model_dump_json()
+                    db.execute(
+                        "INSERT INTO provider_invocations(id,run_id,unit_id,state,attempt,body,created,updated) VALUES(?,?,?,?,?,?,?,?)",
+                        (record.id, record.run_id, record.unit_id, record.state, record.attempt, body, now, now),
+                    )
+        return normalized
+
     def invocation(self, invocation_id: str) -> InvocationRecord:
         with self.connection() as db:
             row = db.execute("SELECT body FROM provider_invocations WHERE id=?", (invocation_id,)).fetchone()
