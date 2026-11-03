@@ -79,4 +79,3 @@ class SceneEvidence(Model):
 class SceneEvidenceLink(Model):
     scene_id: str
     evidence_ids: list[str] = Field(default_factory=list)
-
