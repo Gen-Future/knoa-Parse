@@ -1,6 +1,6 @@
 # 外部模型能力接口草案
 
-本文件保留完整接口设计。同步文本生成最小接口已在 core/text_model.py 实现，具体适配位于 providers/text_model，apps 负责配置和注入。M3-A 已在 core/document_analysis.py 实现同步单页文档分析内部协议及独立编排，M3-E 在 core/provider_runs.py 增加 persistence-neutral 调用账目和保守恢复决策，见 [实现边界](m3-document-analysis.md)；无真实文档 Provider，未进入产品路由。其余异步与多模态协议仍为规划。默认无服务凭据，不进行外部调用；显式文本调用方式见 [模型接入](model-services.md)。
+本文件保留完整接口设计。同步文本生成最小接口已在 core/text_model.py 实现，具体适配位于 providers/text_model，apps 负责配置和注入。M3-A 已在 core/document_analysis.py 实现同步单页文档分析内部协议及独立编排，M3-E 在 core/provider_runs.py 增加 persistence-neutral 调用账目和保守恢复决策；M4-B 已在 core/asr.py 增加供应商无关的单片段 ASR 协议和受控 HTTP transport，但未选定真实供应商、未进入产品路由。默认无服务凭据，不进行外部调用；显式文本调用方式见 [模型接入](model-services.md)。
 
 ## 能力划分
 
