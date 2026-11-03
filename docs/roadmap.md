@@ -43,6 +43,7 @@
 - [x] M3-E-基础：Provider 调用账目模型、状态不变量、unknown/query/manual 恢复决策和重试闸门；见 [开发后记录](../testing/records/2026-11-03-m3e-invocation-recovery.md)。未持久化、未接入真实服务。
 - [x] M3-F-基础：SQLite schema 迁移、账目幂等写入、状态迁移、并发冲突和 read-only 查询；见 [开发后记录](../testing/records/2026-11-03-m3f-ledger-store.md)。未接入 worker/真实服务。
 - [x] M3-G-基础：Provider 调用生命周期协调器，统一计划、提交、成功/失败/unknown/取消、显式 retry 和恢复查询；见 [开发后记录](../testing/records/2026-11-03-m3g-invocation-coordinator.md)。未接入 worker/真实服务。
+- [x] M3-H-基础：页级 Provider 执行边界、artifact 发布顺序、取消/unknown 保护和多页 outcome；见 [开发后记录](../testing/records/2026-11-04-m3h-provider-execution.md)。未接入真实服务/产品 worker。
 - [ ] M3-B-产品：真实服务选型与适配、页图准备/映射、原始响应持久化、新目标契约、页级恢复和产品路由；同步时限与费用预算需按服务能力进一步落实。
 - [ ] 选服务后真实联调；扫描/复杂 PDF 通过效果验收才启用。
 

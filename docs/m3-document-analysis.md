@@ -22,6 +22,8 @@ M3-F 将 `InvocationRecord` 持久化到 Store 的 `provider_invocations` 表，
 
 M3-G 的 `enrichment/invocations.py` 提供 `InvocationCoordinator`，把 lifecycle 写入和 `decide_recovery()` 集中到一个内部入口。它不会调用 Provider；成功状态必须由调用方提供已经发布或可绑定的 response artifact ID，unknown 不会自动转成 failed 或 retry。
 
+M3-H 的 `apps/worker/provider_execution.py` 将单页 Provider 调用、取消回调和 response publisher 接到 Coordinator。Provider/Publisher 异常、发送后取消和未知网络结果都保留 unknown；它没有注册到现有 worker，也没有真实异步 job 支持。
+
 这里不渲染 PDF，不验证图片解码尺寸与原 PDF 页框的一致性，不处理裁切/旋转/EXIF。尺寸与 full_page_upright 映射由可信调用方负责。正式接入前需要真实页图准备与几何校验，不可直接把网络用户提供的尺寸当权威来源。合成 fixture 的字节不是实际 PDF/页图，只证明编排语义。
 
 ## 合并、定位与上下文

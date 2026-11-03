@@ -14,6 +14,7 @@
 - [ ] **异步远端恢复**：ProviderInvocation、远端 job ID、查询/取消、崩溃恢复和重复计费保护尚未持久化。
 - [ ] **调用账目持久化**：已完成 SQLite schema 版本、ProviderInvocation 写入/读取、幂等冲突、状态迁移和并发保护；worker 崩溃恢复、真实幂等/query/cancel、账单证据和长期保留仍未完成。
 - [ ] **Provider 生命周期接入**：已完成内部 Coordinator 的计划、提交、终态、显式 retry 和恢复查询；worker 调用顺序、远端 query/cancel、artifact 发布和 API/console 展示仍未完成。
+- [ ] **页级 Provider 执行**：已完成未注册的同步执行边界和 unknown 保护；真实 worker 子进程、异步 job、artifact/ParseResult 事务和产品路由仍未完成。
 - [ ] **费用闸门**：token/金额预算、账单核对和未知扣费状态策略尚未定义；未知费用不得写 0。
 
 ## M1/M2 仍待完成
