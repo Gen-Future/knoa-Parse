@@ -16,12 +16,12 @@
 - [ ] **Provider 生命周期接入**：已完成内部 Coordinator 的计划、提交、终态、显式 retry 和恢复查询；worker 调用顺序、远端 query/cancel、artifact 发布和 API/console 展示仍未完成。
 - [ ] **页级 Provider 执行**：已完成未注册的同步执行边界和 unknown 保护；真实 worker 子进程、异步 job、artifact/ParseResult 事务和产品路由仍未完成。
 - [ ] **费用闸门**：token/金额预算、账单核对和未知扣费状态策略尚未定义；未知费用不得写 0。
-- [ ] **真实音视频工具链**：M4-A 仅完成 ffprobe 进程边界和合成 JSON 契约；实际 FFmpeg/ffprobe 版本、许可证构建、编解码器覆盖、转码/分段和真实 VFR PTS 尚未验收。
+- [ ] **真实音视频工具链扩展**：M4-F 已在 Windows 用 FFmpeg/ffprobe 9.0.2 和 PySceneDetect 0.7.2 验收合成 MP4；真实 VFR/损坏/长文件、跨平台二进制、许可证构建、编解码器覆盖和实际转码/字幕抽取仍未完成。
 - [ ] **外部 ASR 与场景能力**：尚未定义并接入外部 ASR、字幕、PySceneDetect 场景结果的产品契约；不得安装 Whisper、神经 VAD 或本地视觉模型。
-- [ ] **ASR 真实联调**：M4-B 已定义独立外部 ASR 契约和离线 HTTP adapter；真实供应商选择、效果/语言、异步恢复、分段去重、计费和 `transcribe`/`video_understanding` 产品路由仍未完成。
-- [ ] **场景检测真实接入**：M4-C 已完成不含解码器的 PTS/覆盖/区间关联规则；PySceneDetect 版本与 detector 参数、真实帧抽样、黑帧/淡入淡出和跨轨同步仍未验收。
+- [ ] **ASR 真实联调**：Azure Speech fast transcription 2025-10-15 已作为首个候选并完成离线 adapter；真实区域/中文效果、异步恢复、分段去重、计费和 `transcribe`/`video_understanding` 产品路由仍未完成。
+- [ ] **场景检测真实扩展**：M4-F 已接入并验收 PySceneDetect 0.7.2 ContentDetector 的合成 MP4；真实 VFR、黑帧/淡入淡出、快速剪辑和跨轨同步仍未验收。
 - [ ] **音频分段与字幕产品接入**：M4-D 已定义受限重叠 chunk 和 SRT/WebVTT 解析；FFmpeg 实际裁剪、容器字幕抽取、编码延迟、ASR 边界去重和成本账目仍未完成。
-- [ ] **M4 真实验收**：M4-A～E 完成离线边界，但没有真实 FFmpeg/ffprobe、PySceneDetect、ASR 账户和去敏音视频集；VFR、无音轨、外部缺段、抽样覆盖、效果与费用仍不得宣称完成。
+- [ ] **M4 真实服务验收**：本机 FFmpeg/PySceneDetect 工具链已有合成 MP4 证据，但没有真实 ASR 账户、去敏语音集、外部缺段/账单和真实长 VFR 集；`transcribe`/`video_understanding` 仍不得开放。
 
 ## M1/M2 仍待完成
 

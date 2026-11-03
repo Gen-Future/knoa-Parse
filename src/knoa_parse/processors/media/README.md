@@ -1,6 +1,6 @@
 # 媒体工具
 
-状态：M4-A 已实现受控 ffprobe 探测边界，M4-C 已实现不含解码器的 PTS 场景候选和区间关联，M4-D 已实现受限音频 chunk 与 SRT/WebVTT 时间线，M4-E 已实现覆盖/成本闸门；尚未安装/锁定真实二进制或 PySceneDetect，也未启用音视频产品路由。
+状态：M4-A～E 已实现基础边界，M4-F 已锁定可选 `scenedetect-headless==0.7.2` 并完成 Windows 真实合成 MP4 验收；FFmpeg/ffprobe 仍由运行环境提供，音视频产品路由未启用。
 
 音视频探测、转码、音轨提取、规则抽帧，以及图像尺寸/方向处理。候选为 FFmpeg/ffprobe 和所选语言的图片解码库。
 
@@ -8,4 +8,4 @@
 
 只依赖 core 接口及审核后的非模型工具。由 apps 注入解析流程；不得调用 providers 或加载推理模型。CPU/GPU 计算本身不是判断标准，是否包含学习模型及权重才是边界。
 
-详细来源见 [调研](../../../../docs/research/2026-10-14-parser-landscape.md)。安装时锁定版本并验证二进制、传递依赖、退出码、资源限制和首次运行行为。
+详细来源见 [调研](../../../../docs/research/2026-10-14-parser-landscape.md) 和 [M4-F 工具链调查](../../../../docs/research/2026-11-04-video-toolchain.md)。安装时锁定版本并验证二进制、传递依赖、退出码、资源限制和首次运行行为。
