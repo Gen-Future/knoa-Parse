@@ -68,4 +68,3 @@ class MediaExecutionSummary(Model):
     target: Literal["transcribe", "video_understanding"]
     coverage: MediaCoverage
     cost: MediaCostSummary
-
