@@ -57,6 +57,7 @@
 - [x] M4-E-基础：无音轨前置、chunk 覆盖/缺段和费用 unknown 闸门；见 [开发后记录](../testing/records/2026-11-04-m4e-media-gates.md)。真实工具/服务效果仍未验收。
 - [x] M4-F-本地工具链：锁定 `scenedetect-headless==0.7.2`，并用 Windows FFmpeg/ffprobe 9.0.2 与真实合成 MP4 验收 PTS/场景/覆盖；见 [开发后记录](../testing/records/2026-11-04-m4f-real-video-toolchain.md)。跨平台二进制和外部 ASR 仍待验收。
 - [x] M4-G-ASR 适配器：选择并接入 Azure Speech fast transcription REST 2025-10-15 的 multipart、词级时间、speaker 和偏移映射；见 [开发后记录](../testing/records/2026-11-04-m4g-azure-speech.md)。未真实联调，未开放转录目标。
+- [x] M4-H-转录编排：真实 FFmpeg 音频裁剪、ASR 注入、chunk outcome、时间偏移和覆盖/费用摘要串联；见 [开发后记录](../testing/records/2026-11-04-m4h-media-transcription.md)。未接 worker/API/真实 ASR。
 - [ ] M4-真实验收：FFmpeg/ffprobe 与 PySceneDetect 版本、外部 ASR、字幕/场景/转录关联、VFR/无音轨/覆盖和费用通过真实资料验收后才开放目标。
 - [ ] 验证 VFR 与实际 PTS、抽样覆盖、无音轨、外部缺段与费用边界。
 - [ ] 仅转录与完整音画目标分开声明，mock 不构成真实能力证明。

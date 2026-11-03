@@ -20,7 +20,7 @@
 - [ ] **外部 ASR 与场景能力**：尚未定义并接入外部 ASR、字幕、PySceneDetect 场景结果的产品契约；不得安装 Whisper、神经 VAD 或本地视觉模型。
 - [ ] **ASR 真实联调**：Azure Speech fast transcription 2025-10-15 已作为首个候选并完成离线 adapter；真实区域/中文效果、异步恢复、分段去重、计费和 `transcribe`/`video_understanding` 产品路由仍未完成。
 - [ ] **场景检测真实扩展**：M4-F 已接入并验收 PySceneDetect 0.7.2 ContentDetector 的合成 MP4；真实 VFR、黑帧/淡入淡出、快速剪辑和跨轨同步仍未验收。
-- [ ] **音频分段与字幕产品接入**：M4-D 已定义受限重叠 chunk 和 SRT/WebVTT 解析；FFmpeg 实际裁剪、容器字幕抽取、编码延迟、ASR 边界去重和成本账目仍未完成。
+- [ ] **音频分段与字幕产品接入**：M4-H 已完成真实 FFmpeg chunk 裁剪和独立转录编排；容器字幕抽取、编码延迟、ASR 边界去重、成本账目及 worker/API 路由仍未完成。
 - [ ] **M4 真实服务验收**：本机 FFmpeg/PySceneDetect 工具链已有合成 MP4 证据，但没有真实 ASR 账户、去敏语音集、外部缺段/账单和真实长 VFR 集；`transcribe`/`video_understanding` 仍不得开放。
 
 ## M1/M2 仍待完成
