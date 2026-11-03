@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="theme-color" content="#f5f5f0">
+  <title>Knoa Parse · 解析工作台</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/style.css">
+  <script type="module" src="/app.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">跳转到工作区</a>
+  <aside class="sidebar">
+    <a class="brand" href="/" aria-label="Knoa Parse 工作台">
+      <span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i></span>
+      <span class="brand-name">knoa<span>PARSE</span></span>
+    </a>
+    <div class="workspace-label">工作空间 <span>LOCAL</span></div>
+    <nav aria-label="主导航">
+      <button class="nav-item active" data-view="workspace" aria-label="解析工作台"><span data-icon="layers"></span><span>解析工作台</span><span class="nav-dot"></span></button>
+      <button class="nav-item" data-view="capabilities" aria-label="能力清单"><span data-icon="grid"></span><span>能力清单</span></button>
+      <button class="nav-item" data-view="models" aria-label="模型服务"><span data-icon="settings"></span><span>模型服务</span></button>
+    </nav>
+    <div class="sidebar-note"><span class="note-line"></span><p>每一份证据，<br>都有来处。</p><span>TRACEABLE BY DESIGN</span></div>
+    <div class="sidebar-bottom">
+      <button class="nav-item" id="connection-nav"><span data-icon="link"></span><span>重新连接服务</span></button>
+      <a class="nav-item" href="https://github.com/Gen-Future/knoa-Parse" target="_blank" rel="noopener noreferrer"><span data-icon="book"></span><span>项目文档</span><span class="external-arrow">↗</span></a>
+      <div class="build-label"><span class="tiny-mark">k.</span><span>独立解析 · 清晰可溯</span></div>
+    </div>
+  </aside>
+
+  <div class="app-shell">
+    <header class="topbar">
+      <div class="breadcrumb"><span data-icon="folder"></span>本地工作空间<span class="breadcrumb-separator">/</span><strong id="breadcrumb-page">解析工作台</strong></div>
+      <button id="connection-status" class="connection-pill"><span class="status-dot neutral"></span><span>正在连接</span><span data-icon="chevron-down"></span></button>
+    </header>
+    <main id="main" tabindex="-1">
+      <div class="page-heading">
+        <div><div class="eyebrow">LESS NOISE. MORE CLARITY.</div><h1 id="page-title">解析工作台<span class="heading-period">.</span></h1><p id="page-subtitle">看见资料如何成为证据。</p></div>
+        <div class="page-actions"><span id="last-synced" class="sync-time">正在加载本地服务</span><button id="refresh" class="icon-button" aria-label="刷新任务" title="刷新任务"><span data-icon="refresh"></span></button><button id="new-parse" class="button primary"><span data-icon="plus"></span>新建解析</button></div>
+      </div>
+      <div id="global-error" class="notice error" role="alert" hidden></div>
+
+      <section id="workspace-view">
+        <div id="drop-zone" class="drop-zone">
+          <div class="upload-art" aria-hidden="true"><div class="paper back"></div><div class="paper front"><span></span><span></span><span></span><i>k.</i></div><span class="paper-check">✓</span></div>
+          <div class="drop-copy"><span class="section-kicker">从原件开始</span><h2>给资料一个清晰的起点。</h2><p>拖入文件，让内容、结构与来源各归其位。</p><div id="format-chips" class="format-chips"><span class="format-placeholder">连接后查看可用格式</span></div></div>
+          <div class="drop-action"><button id="choose-file" class="button quiet"><span data-icon="upload"></span>选择文件</button><span id="upload-hint">或将文件拖放到这里</span></div>
+          <input id="file-input" type="file" multiple hidden>
+        </div>
+        <div id="upload-state" class="upload-state" role="status" hidden></div>
+
+        <div class="overview-strip" aria-label="当前列表概览">
+          <div class="overview-item"><span>最近任务</span><strong id="count-all">—</strong><small id="count-scope">当前工作空间</small></div>
+          <div class="overview-item"><span><i class="inline-dot green"></i>处理中</span><strong id="count-active">—</strong><small>排队与执行中</small></div>
+          <div class="overview-item"><span><i class="inline-dot amber"></i>需关注</span><strong id="count-attention">—</strong><small>部分完成与失败</small></div>
+          <div class="principle-note"><span data-icon="fingerprint"></span><div><strong>原件与证据，一一对应</strong><span>保留来源、位置与明确的解析缺口</span></div></div>
+        </div>
+
+        <div class="workbench">
+          <section class="task-panel" aria-labelledby="task-title">
+            <div class="panel-heading"><div><h2 id="task-title">解析记录 <span id="task-count" class="count-bubble">0</span></h2><p>从每一次输入，回到每一份证据。</p></div><button id="import-job" class="text-button" title="按完整任务 ID 打开"><span data-icon="link"></span>打开任务</button></div>
+            <div class="task-toolbar"><div class="filters" role="group" aria-label="任务状态筛选"><button data-filter="all" class="active">全部</button><button data-filter="active">处理中</button><button data-filter="attention">需关注</button></div><div class="search-wrap"><span data-icon="search"></span><input id="search" type="search" placeholder="搜索名称或任务 ID" aria-label="搜索名称或任务 ID"><kbd>Ctrl K</kbd></div></div>
+            <div id="task-list" class="task-list" aria-live="polite"></div>
+            <div class="list-footer"><span id="list-scope">等待连接后读取任务</span><span class="live-label"><i></i><span id="live-label">未同步</span></span></div>
+          </section>
+          <section class="inspector" aria-labelledby="inspector-title"><div id="inspector-content"></div></section>
+        </div>
+      </section>
+
+      <section id="capabilities-view" hidden>
+        <div class="capability-intro"><div class="capability-emblem" data-icon="grid"></div><div><span class="section-kicker">只展示已启用的能力</span><h2>知道边界，才能信任结果。</h2><p>这里的格式来自当前运行实例。尚未接入的能力，不会被包装成可用。</p></div></div>
+        <div id="capability-list"></div>
+      </section>
+      <section id="models-view" hidden aria-labelledby="model-settings-title">
+        <div class="model-settings-layout">
+          <form id="model-settings-form" class="model-settings-card">
+            <span class="section-kicker">MODEL CONNECTION</span><h2 id="model-settings-title">选择模型服务渠道</h2>
+            <p class="model-intro">默认使用硅基流动，也可以连接你自己的模型平台。</p>
+            <div id="model-auth-notice" class="notice">正在读取本地服务配置。<button type="button" class="text-button" data-action="connect">重试连接 →</button></div>
+            <div id="model-settings-status" class="notice" role="status" hidden></div>
+            <div class="model-field-grid">
+              <div><label for="model-platform">平台渠道</label><select id="model-platform"><option value="siliconflow">硅基流动 SiliconFlow</option><option value="custom">自定义平台</option></select></div>
+              <div><label for="model-protocol">兼容协议</label><select id="model-protocol"><option value="openai">OpenAI · Chat Completions</option><option value="anthropic">Anthropic · Messages</option></select></div>
+            </div>
+            <div id="model-custom-name" hidden><label for="model-provider-name">平台名称</label><input id="model-provider-name" maxlength="64" value="custom-platform" autocomplete="off" placeholder="例如：团队模型网关"></div>
+            <label for="model-base-url">服务地址 Base URL</label><input id="model-base-url" type="url" required value="https://api.siliconflow.cn/v1" placeholder="https://your-provider.example/v1" autocomplete="off" spellcheck="false"><p class="form-help">填写服务根地址，通常以 /v1 结尾。</p>
+            <label for="model-name">模型名称 / ID</label><input id="model-name" required maxlength="256" value="deepseek-ai/DeepSeek-V3.2" placeholder="平台提供的模型 ID" autocomplete="off" spellcheck="false">
+            <label for="model-api-key">模型平台 API Key <span id="model-key-state">尚未读取</span></label><input id="model-api-key" type="password" maxlength="4096" placeholder="填写或更新平台密钥" autocomplete="new-password" spellcheck="false"><p id="model-key-help" class="form-help">仅用于所选模型平台的 API 调用。</p>
+            <div class="model-field-grid">
+              <div><label for="model-timeout">超时（秒）</label><input id="model-timeout" type="number" min="1" max="300" value="60" required></div>
+              <div id="model-thinking-field"><label for="model-thinking">思考模式</label><select id="model-thinking"><option value="default">使用平台默认</option><option value="false" selected>关闭</option><option value="true">开启</option></select></div>
+            </div>
+            <div class="model-settings-actions"><button id="model-save" type="submit" class="button primary" disabled>保存设置</button><button id="model-test" type="button" class="button quiet" disabled>测试已保存配置</button><button id="model-reload" type="button" class="text-button" disabled>重新读取</button></div>
+          </form>
+          <aside class="model-settings-aside"><span class="dialog-symbol" data-icon="link"></span><h3>平台与协议，自由组合。</h3><p>硅基流动已预填服务地址和默认模型。自定义平台可选择 OpenAI 或 Anthropic 兼容协议。</p><div class="model-saved-summary" id="model-saved-summary">服务就绪后显示当前已保存的渠道。</div><p>保存后立即生效。测试连接会发送一条简短请求，使用平台额度。</p><p>已有密钥不会回显；同一渠道留空即可保留。更换渠道或地址时，请填写对应密钥。</p><p class="form-help">此设置用于文本模型服务，资料自动增强仍需对应解析能力支持。</p></aside>
+        </div>
+      </section>
+      <footer class="page-footer"><span>Knoa Parse</span><span>让内容有结构，让证据有来处。</span><span id="schema-label">原生解析工作空间</span></footer>
+    </main>
+  </div>
+
+  <dialog id="job-dialog" aria-labelledby="job-dialog-title"><form id="job-form"><div class="dialog-heading"><span class="dialog-symbol" data-icon="search"></span><button type="button" class="icon-button close-dialog" aria-label="关闭查找任务"><span data-icon="close"></span></button></div><h2 id="job-dialog-title">回到一份证据</h2><p>输入完整任务 ID，打开列表范围之外的任务。</p><label for="job-id-input">任务 ID</label><input id="job-id-input" required spellcheck="false" autocomplete="off" placeholder="粘贴任务 ID"><div id="job-error" class="form-error" role="alert" hidden></div><div class="dialog-actions"><button type="submit" class="button primary">打开任务<span data-icon="arrow-right"></span></button></div></form></dialog>
+  <div id="toast" class="toast" role="status" hidden></div>
+  <div id="announcer" class="sr-only" aria-live="polite"></div>
+</body>
+</html>

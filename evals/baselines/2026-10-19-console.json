@@ -1,0 +1,60 @@
+{
+  "date": "2026-10-19",
+  "platform": "Windows",
+  "scope": "Optional local observation console",
+  "python_tests": {
+    "run": 64,
+    "passed": 64,
+    "elapsed_seconds": 86.979
+  },
+  "frontend_logic_tests": {
+    "run": 4,
+    "passed": 4,
+    "runtime": "Node built-in test runner; no npm dependencies"
+  },
+  "console_tests_without_documents": {
+    "run": 4,
+    "passed": 4
+  },
+  "distribution": {
+    "extracted_wheel_assets_and_authenticated_api": "passed",
+    "runtime_dependencies_added": [],
+    "static_asset_bytes": 85050,
+    "uv_lock_sha256": "6f885ace1718a280a6bfb2d0481534ea550fbf09e18a7feb41dc278bb2c72fb3"
+  },
+  "browser_observations": {
+    "invalid_token": "rejected",
+    "live_task_list": "passed",
+    "state_filters": "passed",
+    "chinese_search": "passed",
+    "task_id_lookup": "passed",
+    "upload_via_filechooser_then_independent_worker_then_result": "passed",
+    "cancel_queued_task": "passed",
+    "partial_pdf_coverage_and_issues": "passed",
+    "authenticated_bitmap_preview": "passed",
+    "normalized_result_download": "passed",
+    "source_download_sha256": "passed",
+    "capabilities_from_live_instance": "passed",
+    "refresh_requires_reconnect": "passed",
+    "keyboard_ctrl_k_and_result_tab_arrow_keys": "passed",
+    "responsive_widths_checked": [
+      320,
+      390,
+      1440
+    ]
+  },
+  "api_additions": [
+    "GET /v1/jobs?limit=50 (1..100)",
+    "GET /v1/sources/{source_id}"
+  ],
+  "boundaries": [
+    "Core parsing pipeline, result schema and budgets unchanged for UI",
+    "Console is a separate optional entry; API, CLI and worker remain independently runnable",
+    "No fabricated phase percentage, durations, worker heartbeat or external model capability",
+    "Single-principal local API; recent-window counts, not global historical statistics"
+  ],
+  "limitations": [
+    "Synthetic preview workspace, not production acceptance",
+    "POSIX UI runtime and remote CI not exercised on this Windows host"
+  ]
+}

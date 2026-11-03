@@ -1,0 +1,12 @@
+{
+  "provider": "siliconflow",
+  "protocol": "openai",
+  "base_url": "https://api.siliconflow.cn/v1",
+  "model": "deepseek-ai/DeepSeek-V3.2",
+  "api_key": "REPLACE_WITH_YOUR_KEY",
+  "timeout_seconds": 60,
+  "max_output_tokens": 4096,
+  "max_input_chars": 36000,
+  "max_response_bytes": 2097152,
+  "enable_thinking": false
+}

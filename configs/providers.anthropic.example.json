@@ -1,0 +1,9 @@
+{
+  "provider": "custom-platform",
+  "protocol": "anthropic",
+  "base_url": "https://your-provider.example/v1",
+  "model": "your-model-id",
+  "api_key": "REPLACE_WITH_YOUR_KEY",
+  "anthropic_version": "2023-06-01",
+  "timeout_seconds": 60
+}

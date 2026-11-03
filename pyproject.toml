@@ -27,6 +27,7 @@ where = ["src"]
 
 [tool.setuptools.package-data]
 "knoa_parse.parsers" = ["catalog.json"]
+"knoa_parse.apps.console" = ["static/*.html", "static/*.css", "static/*.js", "static/*.mjs"]
 
 [tool.uv]
 default-groups = ["dev"]
