@@ -12,10 +12,13 @@ from typing import BinaryIO
 
 from .errors import ParseError
 from .models import ParseResult, Source
+from .provider_runs import InvocationRecord
 from .probe import probe
 from .settings import Settings
 
 class Store:
+    INVOCATION_SCHEMA_VERSION = 2
+
     def __init__(self, settings: Settings, read_only: bool = False):
         self.settings = settings
         self.root = settings.data_dir.resolve()
@@ -38,7 +41,26 @@ class Store:
                     id TEXT PRIMARY KEY, digest TEXT NOT NULL, media_type TEXT NOT NULL,
                     size_bytes INTEGER NOT NULL
                 );
+                CREATE TABLE IF NOT EXISTS schema_meta(
+                    key TEXT PRIMARY KEY, value TEXT NOT NULL
+                );
+                CREATE TABLE IF NOT EXISTS provider_invocations(
+                    id TEXT PRIMARY KEY,
+                    run_id TEXT NOT NULL,
+                    unit_id TEXT NOT NULL,
+                    state TEXT NOT NULL,
+                    attempt INTEGER NOT NULL,
+                    body TEXT NOT NULL,
+                    created REAL NOT NULL,
+                    updated REAL NOT NULL,
+                    UNIQUE(run_id, unit_id)
+                );
+                CREATE INDEX IF NOT EXISTS provider_invocations_run
+                    ON provider_invocations(run_id, unit_id, id);
                 CREATE INDEX IF NOT EXISTS jobs_recent ON jobs(created DESC, id DESC);
+                INSERT OR IGNORE INTO schema_meta(key, value) VALUES('schema_version', '2');
+                UPDATE schema_meta SET value='2'
+                    WHERE key='schema_version' AND CAST(value AS INTEGER) < 2;
             """)
 
     @contextmanager
@@ -158,6 +180,93 @@ class Store:
         return {"items": [{**self._job(row), "created_at": row["created"],
                            "source": Source.model_validate_json(row["source_body"]).model_dump(mode="json")}
                           for row in rows[:limit]], "has_more": len(rows) > limit, "limit": limit}
+
+    @staticmethod
+    def _invocation_transition_allowed(previous: str, current: str) -> bool:
+        return current in {
+            "planned": {"submitted", "cancelled"},
+            "submitted": {"succeeded", "failed", "unknown", "cancelled"},
+            "unknown": {"succeeded", "failed", "unknown", "cancelled"},
+            "failed": {"failed", "submitted"},
+            "succeeded": {"succeeded"},
+            "cancelled": {"cancelled"},
+        }.get(previous, set())
+
+    def save_invocation(self, record: InvocationRecord, expected_state: str | None = None) -> InvocationRecord:
+        """Insert or atomically advance one invocation record.
+
+        This is deliberately separate from provider execution. It makes state
+        transitions durable without deciding whether an unknown request was billed.
+        """
+        if self.read_only:
+            raise ParseError("read_only", "Read-only store cannot write invocation records", 403)
+        record = InvocationRecord.model_validate(record.model_dump())
+        body = record.model_dump_json()
+        now = time.time()
+        billing_rank = {"not_sent": 0, "pending": 1, "unknown": 2, "known": 3}
+        with self.connection() as db:
+            db.execute("BEGIN IMMEDIATE")
+            row = db.execute("SELECT * FROM provider_invocations WHERE id=?", (record.id,)).fetchone()
+            if row is None:
+                if expected_state is not None:
+                    raise ParseError("invocation_conflict", "Expected invocation does not exist", 409)
+                try:
+                    db.execute(
+                        "INSERT INTO provider_invocations(id,run_id,unit_id,state,attempt,body,created,updated) VALUES(?,?,?,?,?,?,?,?)",
+                        (record.id, record.run_id, record.unit_id, record.state, record.attempt, body, now, now),
+                    )
+                except sqlite3.IntegrityError:
+                    raise ParseError("invocation_conflict", "Invocation unit already belongs to another record", 409) from None
+                return record
+
+            previous = InvocationRecord.model_validate_json(row["body"])
+            if row["body"] == body:
+                return previous
+            if expected_state is not None and previous.state != expected_state:
+                raise ParseError("invocation_conflict", "Invocation state changed before this update", 409)
+            if (previous.run_id, previous.unit_id) != (record.run_id, record.unit_id):
+                raise ParseError("invocation_conflict", "Invocation identity cannot change", 409)
+            if not self._invocation_transition_allowed(previous.state, record.state):
+                raise ParseError("invocation_conflict", "Illegal invocation state transition", 409)
+            if record.attempt < previous.attempt:
+                raise ParseError("invocation_conflict", "Invocation attempt cannot decrease", 409)
+            retrying = previous.state == "failed" and record.state == "submitted" and record.attempt == previous.attempt + 1
+            if billing_rank[record.billing_state] < billing_rank[previous.billing_state] and not retrying:
+                raise ParseError("invocation_conflict", "Billing state cannot move backwards", 409)
+            if previous.state == "planned" and (record.state == "submitted" and record.attempt != 1):
+                raise ParseError("invocation_conflict", "First submission must be attempt one", 409)
+            if previous.state == "failed" and record.state == "submitted" and record.attempt != previous.attempt + 1:
+                raise ParseError("invocation_conflict", "Retry must advance exactly one attempt", 409)
+            changed = db.execute(
+                "UPDATE provider_invocations SET state=?,attempt=?,body=?,updated=? WHERE id=? AND state=? AND updated=?",
+                (record.state, record.attempt, body, now, record.id, previous.state, row["updated"]),
+            ).rowcount
+            if changed != 1:
+                raise ParseError("invocation_conflict", "Invocation changed concurrently", 409)
+            return record
+
+    def invocation(self, invocation_id: str) -> InvocationRecord:
+        with self.connection() as db:
+            row = db.execute("SELECT body FROM provider_invocations WHERE id=?", (invocation_id,)).fetchone()
+        if row is None:
+            raise ParseError("invocation_not_found", "Invocation does not exist", 404)
+        return InvocationRecord.model_validate_json(row["body"])
+
+    def list_invocations(self, run_id: str, state: str | None = None) -> list[InvocationRecord]:
+        query = "SELECT body FROM provider_invocations WHERE run_id=?"
+        args: list[str] = [run_id]
+        if state is not None:
+            query += " AND state=?"
+            args.append(state)
+        query += " ORDER BY unit_id, id"
+        with self.connection() as db:
+            rows = db.execute(query, args).fetchall()
+        return [InvocationRecord.model_validate_json(row["body"]) for row in rows]
+
+    def invocation_schema_version(self) -> int:
+        with self.connection() as db:
+            row = db.execute("SELECT value FROM schema_meta WHERE key='schema_version'").fetchone()
+        return int(row["value"]) if row else 0
 
     def claim(self, job_id: str | None = None) -> tuple[str, str] | None:
         now = time.time()

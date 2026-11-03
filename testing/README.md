@@ -28,6 +28,8 @@
 
 当前工程：[M3-E 开发前需求](changes/2026-11-03-m3e-invocation-recovery-before.md)、[开发后不确定项](changes/2026-11-03-m3e-invocation-recovery-after.md)、[验证记录](records/2026-11-03-m3e-invocation-recovery.md)。
 
+当前工程：[M3-F 开发前需求](changes/2026-11-03-m3f-ledger-store-before.md)、[开发后不确定项](changes/2026-11-03-m3f-ledger-store-after.md)、[验证记录](records/2026-11-03-m3f-ledger-store.md)。
+
 - 实现前创建 `testing/changes/YYYY-MM-DD-主题-before.md`，使用 [开发前模板](templates/before-development.md)。需求、样本与独立预期先于实现；任务开始时尚有疑问，先写待决事项和禁止做出的假设。
 - 工作结束创建同名前缀的 `-after.md`，使用 [开发后模板](templates/after-development.md)，单独列出不确定部分，链接原需求与自动验证证据。新增风险不能只埋在交付对话里。
 - 行为范围调整时更新 before 并记录原因；after 不得降低原验收条件来消除失败。
