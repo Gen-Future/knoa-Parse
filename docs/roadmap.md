@@ -52,6 +52,7 @@
 
 - [x] M4-A-基础：引擎无关媒体流/时间基/PTS 契约与受控 ffprobe 边界；见 [开发后记录](../testing/records/2026-11-04-m4a-media-probe.md)。未安装或锁定实际二进制，未开放音视频产品能力。
 - [x] M4-B-基础：供应商无关的外部 ASR 单片段契约、时间偏移、词级结果和 HTTPS/JSON transport；见 [开发后记录](../testing/records/2026-11-04-m4b-asr.md)。未接真实服务、未开放转录目标。
+- [x] M4-C-基础：基于实际帧 PTS 的场景候选、抽样覆盖与音频/字幕/转录区间关联；见 [开发后记录](../testing/records/2026-11-04-m4c-scene-timeline.md)。未安装 PySceneDetect，未开放视频理解。
 - [ ] FFmpeg/ffprobe、外部 ASR、PySceneDetect、字幕/场景/转录关联。
 - [ ] 验证 VFR 与实际 PTS、抽样覆盖、无音轨、外部缺段与费用边界。
 - [ ] 仅转录与完整音画目标分开声明，mock 不构成真实能力证明。
