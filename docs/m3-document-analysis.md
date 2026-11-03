@@ -16,6 +16,8 @@ M3-C 的 `processors/pdf/page_inputs.py` 负责这组前置绑定和 0/90/180/27
 
 M3-D 的 `processors/pdf/rendering.py` 定义 `PdfRenderer`、`PdfRenderRequest` 和 `RenderBudget`。它先核对固定 Source 字节，再将排序后的页规格与预算交给显式注入的 Renderer，最后把所有输出一次性送入 M3-C；没有实际渲染器、路径访问或强制进程超时。
 
+M3-E 的 `core/provider_runs.py` 定义调用账目、远端引用、用量和 `decide_recovery()`。它只返回 submit/retry/query/manual/skip 等决策，不调用 Provider、不写数据库；unknown billing 默认不能自动重试。SQLite、worker 恢复和真实远端能力需另建产品接入阶段。
+
 这里不渲染 PDF，不验证图片解码尺寸与原 PDF 页框的一致性，不处理裁切/旋转/EXIF。尺寸与 full_page_upright 映射由可信调用方负责。正式接入前需要真实页图准备与几何校验，不可直接把网络用户提供的尺寸当权威来源。合成 fixture 的字节不是实际 PDF/页图，只证明编排语义。
 
 ## 合并、定位与上下文

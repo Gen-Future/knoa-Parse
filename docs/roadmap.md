@@ -40,6 +40,7 @@
 - [x] M3-B-基础：通用 HTTPS/JSON 文档服务 transport、响应边界和错误归一化；见 [开发后记录](../testing/records/2026-10-22-m3b-http-provider.md)。未绑定厂商且未开放产品能力。
 - [x] M3-C：PDF 原生页与已准备 full_page_upright 栅格的来源、SHA、媒体、页集合、旋转和宽高比前置校验；见 [开发后记录](../testing/records/2026-11-02-m3c-page-input.md)。不包含渲染或 OCR。
 - [x] M3-D：Renderer 注入边界、Source 完整性预检、页数/像素/单页/总输出预算和 M3-C 原子接入；见 [开发后记录](../testing/records/2026-11-02-m3d-renderer-boundary.md)。不包含具体渲染库。
+- [x] M3-E-基础：Provider 调用账目模型、状态不变量、unknown/query/manual 恢复决策和重试闸门；见 [开发后记录](../testing/records/2026-11-03-m3e-invocation-recovery.md)。未持久化、未接入真实服务。
 - [ ] M3-B-产品：真实服务选型与适配、页图准备/映射、原始响应持久化、新目标契约、页级恢复和产品路由；同步时限与费用预算需按服务能力进一步落实。
 - [ ] 选服务后真实联调；扫描/复杂 PDF 通过效果验收才启用。
 
