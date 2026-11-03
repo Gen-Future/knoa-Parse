@@ -16,6 +16,8 @@
 - [ ] **Provider 生命周期接入**：已完成内部 Coordinator 的计划、提交、终态、显式 retry 和恢复查询；worker 调用顺序、远端 query/cancel、artifact 发布和 API/console 展示仍未完成。
 - [ ] **页级 Provider 执行**：已完成未注册的同步执行边界和 unknown 保护；真实 worker 子进程、异步 job、artifact/ParseResult 事务和产品路由仍未完成。
 - [ ] **费用闸门**：token/金额预算、账单核对和未知扣费状态策略尚未定义；未知费用不得写 0。
+- [ ] **真实音视频工具链**：M4-A 仅完成 ffprobe 进程边界和合成 JSON 契约；实际 FFmpeg/ffprobe 版本、许可证构建、编解码器覆盖、转码/分段和真实 VFR PTS 尚未验收。
+- [ ] **外部 ASR 与场景能力**：尚未定义并接入外部 ASR、字幕、PySceneDetect 场景结果的产品契约；不得安装 Whisper、神经 VAD 或本地视觉模型。
 
 ## M1/M2 仍待完成
 
