@@ -6,6 +6,7 @@ from dataclasses import replace
 from knoa_parse.engines.docling import DoclingEngine, MIMES, dependency_status
 from knoa_parse.core.store import Store
 from knoa_parse.core.errors import ParseError
+from knoa_parse.core.text_model import TextModelProvider
 
 PARSERS = {"text/plain": TextParser(), "application/json": JsonParser()}
 ACCEPTED_EXTENSIONS = {".txt", ".json", *MIMES.values()}
@@ -36,7 +37,7 @@ def get_parser(media_type, sink):
     return constructors[MIMES[media_type]]()
 
 
-def capabilities() -> dict:
+def capabilities(text_provider: TextModelProvider | None = None) -> dict:
     available = dependency_status()["passed"]
     formats = [{"extension": ".txt", "target": "native_extract", "encoding": "UTF-8"},
                {"extension": ".json", "target": "native_extract", "encoding": "UTF-8"}]
@@ -45,7 +46,7 @@ def capabilities() -> dict:
     return {
         "schema_version": "0.2.0-draft.1",
         "formats": formats,
-        "external_capabilities": [],
+        "external_capabilities": [text_provider.describe()] if text_provider is not None else [],
         "document_engine": {"name": "docling", "enabled": available,
                             "reason": "Audited native paths only" if available else "Documents dependency audit failed"},
         "local_model_inference": False,

@@ -1,0 +1,78 @@
+{
+  "version": 1,
+  "origin": "Authored synthetic inputs; no private or third-party document corpus",
+  "oracle": "Explicit content/structure expectations authored separately from parser output; no accuracy claim for real documents",
+  "cases": [
+    {"id": "txt-unicode", "file": "unicode.txt", "expected": "completed", "checks": [
+      {"type": "text_exact", "value": "﻿中文😀\r\n重复证据\r\n重复证据\n```代码```"}
+    ]},
+    {"id": "txt-invalid", "file": "invalid.txt", "ingest_error": "invalid_encoding"},
+    {"id": "json-nested", "file": "nested.json", "expected": "completed", "checks": [
+      {"type": "json_exact", "value": {"中文": {"a/b~c": [0, false, null, "00123", "😀"]}, "列表": []}}
+    ]},
+    {"id": "json-duplicate", "file": "duplicate.json", "ingest_error": "invalid_json"},
+    {"id": "word-complex", "file": "complex.docx", "documents": true, "expected": "completed", "checks": [
+      {"type": "text_count", "value": "重复证据", "count": 2},
+      {"type": "text_count", "value": "链接与修订：插入内容本地链接文字", "count": 1},
+      {"type": "text_count", "value": "脚注证据，不应静默丢失", "count": 1},
+      {"type": "text_count", "value": "研究页眉", "count": 1},
+      {"type": "text_count", "value": "研究页脚", "count": 1},
+      {"type": "text_count", "value": "第二节页眉", "count": 1},
+      {"type": "text_count", "value": "第二节正文", "count": 1},
+      {"type": "text_absent", "value": "已删除内容"},
+      {"type": "table_cell", "fields": {"text": "合并表头", "column_span": 3}, "count": 1},
+      {"type": "issue", "code": "derived_locations", "severity": "warning"}
+    ]},
+    {"id": "slides-complex", "file": "complex.pptx", "documents": true, "expected": "completed", "checks": [
+      {"type": "text_count", "value": "跨页重复", "count": 2},
+      {"type": "slide_text", "value": "分组内正文", "slide": 1, "role": "body"},
+      {"type": "slide_text", "value": "第一页备注", "slide": 1, "role": "notes"},
+      {"type": "slide_text", "value": "第二页备注", "slide": 2, "role": "notes"},
+      {"type": "table_cell", "fields": {"text": "演示合并表头", "column_span": 3}, "count": 1},
+      {"type": "chart_cells", "texts": ["收入", "一月", "二月", "10", "20"]},
+      {"type": "issue", "code": "chart_visual_not_rendered", "severity": "warning"}
+    ]},
+    {"id": "xlsx-types", "file": "types.xlsx", "documents": true, "expected": "completed", "checks": [
+      {"type": "cell", "sheet": "数据 同名", "address": "D4", "fields": {"raw_value": 0, "data_type": "n", "column_hidden": true}},
+      {"type": "cell", "sheet": "数据 同名", "address": "D5", "fields": {"raw_value": false, "data_type": "b", "row_hidden": true, "column_hidden": true}},
+      {"type": "cell", "sheet": "数据 同名", "address": "D6", "fields": {"raw_value": "#DIV/0!", "data_type": "e"}},
+      {"type": "cell", "sheet": "数据 同名", "address": "D7", "fields": {"raw_value": "00123", "data_type": "s"}},
+      {"type": "cell", "sheet": "数据 同名", "address": "D8", "fields": {"raw_value": "2026-10-19T00:00:00", "number_format": "yyyy-mm-dd"}},
+      {"type": "cell", "sheet": "数据 同名", "address": "D9", "fields": {"raw_value": "P2DT1H30M", "number_format": "[h]:mm:ss"}},
+      {"type": "cell", "sheet": "数据 同名", "address": "H3", "fields": {"raw_value": "二维合并", "merged_range": "H3:J4"}},
+      {"type": "cell", "sheet": "数据 同名", "address": "F20", "fields": {"formula": "=SUM(D4:D5)", "cached_value": null, "cache_state": "not_available", "column_hidden": true}},
+      {"type": "cell", "sheet": "极隐藏", "address": "A1", "fields": {"raw_value": "不能遗漏的隐藏原文", "sheet_state": "veryHidden"}},
+      {"type": "text_count", "value": "[author: 合成作者]: 原生批注内容", "count": 1},
+      {"type": "chart_cells", "texts": ["原始值", "0"]},
+      {"type": "sheet_order", "names": ["空白首表", "图表页", "数据 同名", "极隐藏"]},
+      {"type": "sheet_table", "sheet": "数据 同名", "contains": "中文字段"},
+      {"type": "coverage", "unit": "sheet:空白首表", "status": "completed"}
+    ]},
+    {"id": "xlsx-formulas", "file": "formulas.xlsx", "documents": true, "expected": "completed", "checks": [
+      {"type": "cell", "sheet": "纯公式", "address": "B7", "fields": {"formula": "=1+2", "cached_value": null, "cache_state": "not_available"}},
+      {"type": "cell", "sheet": "纯公式", "address": "AA9", "fields": {"formula": "=SUM(B7,4)", "cached_value": null}},
+      {"type": "coverage", "unit": "sheet:纯公式", "status": "completed"}
+    ]},
+    {"id": "pdf-cjk-rotated", "file": "cjk.pdf", "documents": true, "expected": "completed", "page_sizes": {"1": [612, 792], "2": [792, 612]}, "checks": [
+      {"type": "pdf_text", "value": "左栏重复", "page": 1, "region": [70, 735, 150, 710]},
+      {"type": "pdf_text", "value": "右栏重复", "page": 1, "region": [325, 735, 410, 710]},
+      {"type": "pdf_text", "value": "中文原生证据", "page": 1, "region": [70, 700, 170, 665]},
+      {"type": "pdf_text", "value": "旋转中文", "page": 2, "region": [710, 550, 740, 480]},
+      {"type": "issue", "code": "reading_order_unresolved", "severity": "warning"}
+    ]},
+    {"id": "pdf-mixed", "file": "mixed.pdf", "documents": true, "expected": "partial", "page_sizes": {"1": [612, 792]}, "checks": [
+      {"type": "text_count", "value": "Native header", "count": 1},
+      {"type": "image_count", "count": 1},
+      {"type": "issue", "code": "external_ocr_required", "severity": "error"},
+      {"type": "coverage", "unit": "page-1", "status": "failed"}
+    ]},
+    {"id": "pdf-image-only", "file": "image-only.pdf", "documents": true, "expected": "partial", "page_sizes": {"1": [612, 792]}, "checks": [
+      {"type": "image_count", "count": 1},
+      {"type": "issue", "code": "external_ocr_required", "severity": "error"}
+    ]},
+    {"id": "pdf-corrupt", "file": "broken.pdf", "documents": true, "expected": "failed", "checks": []},
+    {"id": "word-corrupt", "file": "broken.docx", "documents": true, "expected": "failed", "checks": []},
+    {"id": "slides-corrupt", "file": "broken.pptx", "documents": true, "expected": "failed", "checks": []},
+    {"id": "xlsx-corrupt", "file": "broken.xlsx", "documents": true, "job_error": "execution_failed"}
+  ]
+}

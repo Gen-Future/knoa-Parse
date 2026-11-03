@@ -12,9 +12,9 @@ from check import check_contract, contract_dir, validate_result
 class ParseContractTests(unittest.TestCase):
     def setUp(self):
         directory = contract_dir()
-        self.schema = json.loads((directory / "parse-result.schema.json").read_text())
-        self.success = json.loads((directory / "examples/success.json").read_text())
-        self.failed = json.loads((directory / "examples/failed.json").read_text())
+        self.schema = json.loads((directory / "parse-result.schema.json").read_text(encoding="utf-8"))
+        self.success = json.loads((directory / "examples/success.json").read_text(encoding="utf-8"))
+        self.failed = json.loads((directory / "examples/failed.json").read_text(encoding="utf-8"))
 
     def validate(self, result):
         validate_result(result, self.schema)

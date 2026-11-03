@@ -1,5 +1,6 @@
 import argparse
 import json
+import os
 from pathlib import Path
 
 from knoa_parse.core.settings import Settings
@@ -16,13 +17,14 @@ def main():
     parser.add_argument("output", type=Path)
     parser.add_argument("max_result_bytes", type=int)
     args = parser.parse_args()
-    import resource
+    if os.name != "nt":
+        import resource
 
-    resource.setrlimit(resource.RLIMIT_FSIZE, (args.max_result_bytes, args.max_result_bytes))
+        resource.setrlimit(resource.RLIMIT_FSIZE, (args.max_result_bytes, args.max_result_bytes))
     try:
         execute(Store(Settings(args.data_dir, max_result_bytes=args.max_result_bytes), read_only=True), args.job_id, args.output)
     except ParseError as exc:
-        args.output.write_text(json.dumps({"error": {"code": exc.code, "message": exc.message}}))
+        args.output.write_text(json.dumps({"error": {"code": exc.code, "message": exc.message}}), encoding="utf-8")
 
 
 if __name__ == "__main__":

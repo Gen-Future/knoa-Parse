@@ -29,7 +29,10 @@ def execute(store: Store, job_id: str, output: Path):
     path = store.verify_source(source)
     sink = StagedArtifacts(output.with_suffix(".artifacts"), store.settings.max_result_bytes)
     result = get_parser(source.media_type, sink).parse(source, path)
-    output.write_text(result.model_dump_json(), encoding="utf-8")
+    payload = result.model_dump_json().encode("utf-8")
+    if len(payload) + sink.total > store.settings.max_result_bytes:
+        raise ParseError("resource_limit", "Result and artifacts exceed the output budget", 413)
+    output.write_bytes(payload)
 
 
 def run_once(store: Store, job_id: str | None = None) -> bool:
@@ -44,7 +47,7 @@ def run_once(store: Store, job_id: str | None = None) -> bool:
         process = subprocess.Popen(
             [sys.executable, "-m", "knoa_parse.apps.worker", str(store.root), identifier, str(output),
              str(store.settings.max_result_bytes)],
-            env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True,
+            env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=os.name != "nt",
         )
         deadline = time.monotonic() + store.settings.job_timeout_seconds
         while process.poll() is None:
@@ -86,7 +89,11 @@ def run_once(store: Store, job_id: str | None = None) -> bool:
 def _stop(process):
     if process.poll() is None:
         try:
-            os.killpg(process.pid, signal.SIGKILL)
+            if os.name == "nt":
+                # Native extraction forbids spawning descendants through the audit guard.
+                process.kill()
+            else:
+                os.killpg(process.pid, signal.SIGKILL)
         except ProcessLookupError:
             pass
     process.wait()

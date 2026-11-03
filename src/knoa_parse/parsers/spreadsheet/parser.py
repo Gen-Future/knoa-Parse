@@ -14,7 +14,7 @@ class SpreadsheetParser(NativeDocumentParser):
 
     def locations(self, source, item, raw_artifact, document):
         locations = super().locations(source, item, raw_artifact, document)
-        if item.kind not in {"table", "text"}:
+        if item.kind not in {"table", "text"} or item.data.get("role") == "native_chart":
             return locations
         for pos in item.locations:
             page = pos["page"]

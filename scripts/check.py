@@ -45,7 +45,7 @@ def validate_result(result, schema):
 
 
 def check_contract():
-    index = json.loads((ROOT / "contracts/index.json").read_text())
+    index = json.loads((ROOT / "contracts/index.json").read_text(encoding="utf-8"))
     directories = {p.parent.name for p in ROOT.glob("contracts/*/parse-result.schema.json")}
     if directories != {"v" + version for version in index["versions"]}:
         raise ValueError("Contract version index must cover every schema")
@@ -54,19 +54,19 @@ def check_contract():
     from export_schema import schema as generated_schema
 
     current = contract_dir(index["active"])
-    current_schema = json.loads((current / "parse-result.schema.json").read_text())
+    current_schema = json.loads((current / "parse-result.schema.json").read_text(encoding="utf-8"))
     if current_schema != generated_schema():
         raise ValueError("Runtime model/schema drift; run scripts/export_schema.py")
     Draft202012Validator.check_schema(current_schema)
     for path in (current / "examples").glob("*.json"):
-        validate_result(json.loads(path.read_text()), current_schema)
+        validate_result(json.loads(path.read_text(encoding="utf-8")), current_schema)
     directory = contract_dir()
-    schema = json.loads((directory / "parse-result.schema.json").read_text())
+    schema = json.loads((directory / "parse-result.schema.json").read_text(encoding="utf-8"))
     Draft202012Validator.check_schema(schema)
     source = (directory / "examples/source.txt").read_bytes()
     original = source.decode("utf-8")
     for name in ("success", "failed"):
-        result = json.loads((directory / f"examples/{name}.json").read_text())
+        result = json.loads((directory / f"examples/{name}.json").read_text(encoding="utf-8"))
         validate_result(result, schema)
         if result["source"]["content_sha256"] != hashlib.sha256(source).hexdigest():
             raise ValueError(f"{name}: source digest mismatch")
@@ -79,11 +79,11 @@ def check_contract():
 
     manifest_file = ROOT / "contracts/knoa-parse/UPSTREAM.json"
     if manifest_file.exists():
-        manifest = json.loads(manifest_file.read_text())
+        manifest = json.loads(manifest_file.read_text(encoding="utf-8"))
         if manifest["version"] != schema["properties"]["schema_version"]["const"]:
             raise ValueError("Snapshot version mismatch")
         actual_files = {
-            str(path.relative_to(directory))
+            path.relative_to(directory).as_posix()
             for path in directory.rglob("*") if path.is_file()
         }
         if set(manifest["files"]) != actual_files:
@@ -172,7 +172,7 @@ def check_import_boundaries():
     for path in source.rglob("*.py"):
         parts = path.relative_to(source).parts
         layer = parts[0]
-        for node in ast.walk(ast.parse(path.read_text())):
+        for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
             if isinstance(node, ast.Import):
                 imports = [name.name for name in node.names]
             elif isinstance(node, ast.ImportFrom):
@@ -243,7 +243,7 @@ def main():
     except (ValueError, KeyError, OSError) as error:
         failures.append(f"Contract: {error}")
     try:
-        catalog = json.loads((ROOT / "src/knoa_parse/parsers/catalog.json").read_text())
+        catalog = json.loads((ROOT / "src/knoa_parse/parsers/catalog.json").read_text(encoding="utf-8"))
         validate_catalog(catalog)
         check_import_boundaries()
     except (ValueError, KeyError, TypeError, OSError) as error:

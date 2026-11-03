@@ -23,6 +23,15 @@ def dependency_status():
     return audit([DOCUMENT_ROOT])
 
 
+def table_data(table):
+    return {"rows": table["num_rows"], "columns": table["num_cols"], "cells": [
+        {"text": c["text"], "row": c["start_row_offset_idx"], "column": c["start_col_offset_idx"],
+         "row_span": c["row_span"], "column_span": c["col_span"],
+         "column_header": c.get("column_header", False), "row_header": c.get("row_header", False)}
+        for c in table["table_cells"]
+    ]}
+
+
 class DoclingEngine:
     def convert(self, source: Source, path: Path) -> EngineDocument:
         if not dependency_status()["passed"]:
@@ -87,20 +96,25 @@ class DoclingEngine:
             image, image_type = None, None
             if pointer.startswith("#/tables/"):
                 kind = "table"
-                table = node["data"]
-                data["rows"], data["columns"] = table["num_rows"], table["num_cols"]
-                data["cells"] = [{"text": c["text"], "row": c["start_row_offset_idx"],
-                                  "column": c["start_col_offset_idx"], "row_span": c["row_span"],
-                                  "column_span": c["col_span"], "column_header": c.get("column_header", False)}
-                                 for c in table["table_cells"]]
+                data.update(table_data(node["data"]))
             elif pointer.startswith("#/pictures/"):
                 kind = "image"
+                meta = node.get("meta") or {}
+                native_chart = (meta.get("tabular_chart") or {}).get("chart_data")
+                if native_chart:
+                    # Upstream already extracted native chart cells. No model or renderer needed.
+                    kind = "table"
+                    data.update(table_data(native_chart))
+                    data["role"] = "native_chart"
+                    data["chart_types"] = [p["class_name"] for p in (meta.get("classification") or {}).get("predictions", [])]
                 image_info = node.get("image", {})
                 uri = image_info.get("uri", "")
                 if uri.startswith("data:image/") and ";base64," in uri:
                     image_type = uri.split(";", 1)[0][5:]
                     image = base64.b64decode(uri.split(",", 1)[1], validate=True)
                     data["size"] = image_info.get("size")
+                elif native_chart:
+                    issues.append(Issue(code="chart_visual_not_rendered", message="Native chart cells are retained without a rendered chart image", severity="warning"))
                 else:
                     issues.append(Issue(code="image_unavailable", message="An embedded image has no retained bytes", severity="error"))
             locations = []

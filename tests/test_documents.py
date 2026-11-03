@@ -171,7 +171,7 @@ class DocumentTests(unittest.TestCase):
     def test_cli_returns_partial_result_instead_of_hiding_retained_evidence(self):
         path = self.root / "fixtures/image-only.pdf"
         result = subprocess.run([sys.executable, "-m", "knoa_parse", "--data-dir", str(self.root / "cli"),
-                                 "parse", str(path)], capture_output=True, text=True, timeout=30)
+                                 "parse", str(path)], capture_output=True, text=True, encoding="utf-8", timeout=30)
         self.assertEqual(result.returncode, 3, result.stderr)
         self.assertEqual(json.loads(result.stdout)["status"], "partial")
 

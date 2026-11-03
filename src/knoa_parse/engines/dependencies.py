@@ -20,7 +20,7 @@ DOCUMENT_ROOT = "docling-slim[convert-core,format-docx,format-pptx,format-xlsx,f
 def audit_lock(path: Path):
     if not path.is_file():
         return {"passed": False, "issues": [{"code": "lock_missing"}]}
-    packages = tomllib.loads(path.read_text())["package"]
+    packages = tomllib.loads(path.read_text(encoding="utf-8"))["package"]
     forbidden = [p["name"] for p in packages if FORBIDDEN.fullmatch(p["name"])]
     return {"passed": not forbidden, "package_records": len(packages), "forbidden": forbidden}
 

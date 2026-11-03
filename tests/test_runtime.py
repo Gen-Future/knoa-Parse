@@ -1,6 +1,7 @@
 import copy
 import io
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -42,6 +43,30 @@ class RuntimeTests(unittest.TestCase):
         self.assertEqual(block.text, text)
         self.assertEqual(text[block.locators[0].start:block.locators[0].end], block.text)
         self.assertEqual(result.source.sha256, source.sha256)
+
+    def test_cli_json_is_utf8_under_legacy_output_encoding(self):
+        text = "中文😀\r\n原文"
+        path = Path(self.temp.name) / "中文😀.txt"
+        path.write_bytes(text.encode("utf-8"))
+        completed = subprocess.run(
+            [sys.executable, "-m", "knoa_parse", "--data-dir", str(self.store.root), "parse", str(path)],
+            env=dict(os.environ, PYTHONIOENCODING="gbk", PYTHONUTF8="0"),
+            capture_output=True, timeout=30,
+        )
+        self.assertEqual(completed.returncode, 0, completed.stderr.decode("utf-8"))
+        result = json.loads(completed.stdout.decode("utf-8"))
+        self.assertEqual(result["blocks"][0]["text"], text)
+        self.assertEqual(result["source"]["filename"], path.name)
+
+    def test_worker_output_budget_rejects_result_before_publication(self):
+        self.store = Store(Settings(Path(self.temp.name), max_result_bytes=512))
+        job = self.store.create_job(self.source(b"x" * 4096).id)
+        run_once(self.store, job["id"])
+        state = self.store.job(job["id"])
+        self.assertEqual(state["state"], "failed")
+        self.assertEqual(state["error"]["code"], "resource_limit")
+        self.assertIsNone(state["result_artifact_id"])
+        self.assertEqual(list((self.store.root / "staging").iterdir()), [])
 
     def test_json_native_types_and_scalar_root(self):
         for value in ({"中文": [1, False, None]}, ["x"], 123, "text", False, None):
@@ -193,8 +218,10 @@ class RuntimeTests(unittest.TestCase):
         self.assertEqual(caught.exception.code, "resource_limit")
 
     def _slow_child(self, *args, **kwargs):
-        return self.real_popen([sys.executable, "-c", "import time; time.sleep(30)"],
-                               stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+        self.slow_process = self.real_popen([sys.executable, "-c", "import time; time.sleep(30)"],
+                                           stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                                           start_new_session=os.name != "nt")
+        return self.slow_process
 
     def test_timeout_terminates_child_and_fails(self):
         self.store = Store(Settings(Path(self.temp.name), job_timeout_seconds=0.1))
@@ -203,6 +230,7 @@ class RuntimeTests(unittest.TestCase):
         with patch("knoa_parse.apps.worker.subprocess.Popen", self._slow_child):
             run_once(self.store, job["id"])
         self.assertEqual(self.store.job(job["id"])["error"]["code"], "execution_timeout")
+        self.assertIsNotNone(self.slow_process.poll())
 
     def test_running_cancellation_stops_child(self):
         job = self.store.create_job(self.source().id)
@@ -217,6 +245,7 @@ class RuntimeTests(unittest.TestCase):
             runner.join(timeout=3)
             self.assertFalse(runner.is_alive())
         self.assertEqual(self.store.job(job["id"])["state"], "cancelled")
+        self.assertIsNotNone(self.slow_process.poll())
 
 
 if __name__ == "__main__":

@@ -38,6 +38,7 @@ class Store:
                     id TEXT PRIMARY KEY, digest TEXT NOT NULL, media_type TEXT NOT NULL,
                     size_bytes INTEGER NOT NULL
                 );
+                CREATE INDEX IF NOT EXISTS jobs_recent ON jobs(created DESC, id DESC);
             """)
 
     @contextmanager
@@ -73,9 +74,10 @@ class Store:
             raise ParseError("invalid_filename", "A filename of at most 255 characters is required")
         digest = hashlib.sha256()
         total = 0
-        with tempfile.NamedTemporaryFile(dir=self.root / "staging", delete=False) as out:
-            path = Path(out.name)
-            try:
+        descriptor, name = tempfile.mkstemp(dir=self.root / "staging")
+        path = Path(name)
+        try:
+            with os.fdopen(descriptor, "wb") as out:
                 while chunk := stream.read(65536):
                     total += len(chunk)
                     if total > self.settings.max_source_bytes:
@@ -84,12 +86,13 @@ class Store:
                     out.write(chunk)
                 out.flush()
                 os.fsync(out.fileno())
-                media_type = probe(path, filename)
-                source = Source(id=uuid.uuid4().hex, revision=digest.hexdigest(), filename=filename,
-                                sha256=digest.hexdigest(), size_bytes=total, media_type=media_type)
-                self._publish(path, source.sha256)
-            finally:
-                path.unlink(missing_ok=True)
+            # Windows requires the writer to be closed before reading or publishing.
+            media_type = probe(path, filename)
+            source = Source(id=uuid.uuid4().hex, revision=digest.hexdigest(), filename=filename,
+                            sha256=digest.hexdigest(), size_bytes=total, media_type=media_type)
+            self._publish(path, source.sha256)
+        finally:
+            path.unlink(missing_ok=True)
         with self.connection() as db:
             db.execute("INSERT INTO sources VALUES(?, ?)", (source.id, source.model_dump_json()))
             db.execute("INSERT INTO artifacts VALUES(?, ?, ?, ?)",
@@ -142,6 +145,19 @@ class Store:
         if row is None:
             raise ParseError("job_not_found", "Job does not exist", 404)
         return self._job(row)
+
+    def list_jobs(self, limit: int = 50) -> dict:
+        """Bounded recent-task observation; no execution or lease mutation."""
+        if not 1 <= limit <= 100:
+            raise ParseError("invalid_limit", "Limit must be between 1 and 100", 422)
+        with self.connection() as db:
+            rows = db.execute(
+                "SELECT jobs.*, sources.body AS source_body FROM jobs JOIN sources ON sources.id=jobs.source_id "
+                "ORDER BY jobs.created DESC, jobs.id DESC LIMIT ?", (limit + 1,),
+            ).fetchall()
+        return {"items": [{**self._job(row), "created_at": row["created"],
+                           "source": Source.model_validate_json(row["source_body"]).model_dump(mode="json")}
+                          for row in rows[:limit]], "has_more": len(rows) > limit, "limit": limit}
 
     def claim(self, job_id: str | None = None) -> tuple[str, str] | None:
         now = time.time()
@@ -198,15 +214,16 @@ class Store:
                 self._publish(item, artifact.sha256)
         digest = hashlib.sha256(raw).hexdigest()
         artifact_id = "result-" + job_id
-        with tempfile.NamedTemporaryFile(dir=self.root / "staging", delete=False) as out:
-            path = Path(out.name)
-            try:
+        descriptor, name = tempfile.mkstemp(dir=self.root / "staging")
+        path = Path(name)
+        try:
+            with os.fdopen(descriptor, "wb") as out:
                 out.write(raw)
                 out.flush()
                 os.fsync(out.fileno())
-                self._publish(path, digest)
-            finally:
-                path.unlink(missing_ok=True)
+            self._publish(path, digest)
+        finally:
+            path.unlink(missing_ok=True)
         with self.connection() as db:
             db.execute("BEGIN IMMEDIATE")
             changed = db.execute("UPDATE jobs SET state=?,result_id=?,token=NULL WHERE id=? AND state='running' AND token=?",

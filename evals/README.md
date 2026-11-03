@@ -1,6 +1,8 @@
 # 解析层验收计划
 
-状态：保留全家族验收设计；文本/JSON 和初始原生文档已有合成回归，其他家族仍待实现。当前证据见 baselines/2026-10-15-documents.json。
+M3-A 独立离线编排演示：运行 `python scripts/evaluate_m3.py`，输出 `.local/m3-dry-run/report.json`。输入及响应来自 [合成 fixture](m3_fixtures.py)，明确为 mock/dry_run，不代表真实 OCR 效果；边界见 [M3-A](../docs/m3-document-analysis.md)。
+
+状态：保留全家族验收设计；六种已启用后缀有初始回归和 15 个预先编写语义预期的 M2 合成样例，其他家族仍待实现。新增范围与未验证项见 [M2 覆盖记录](m2-coverage.md)，历史证据保留在 baselines。
 
 | 家族/能力 | 最小样例 | 必须验证的结果 |
 | --- | --- | --- |

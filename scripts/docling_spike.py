@@ -2,7 +2,6 @@
 import argparse
 import json
 import hashlib
-import resource
 import sys
 import time
 from pathlib import Path
@@ -50,7 +49,7 @@ def main():
                         "elapsed_seconds": time.monotonic() - before,
                         "items": len(converted.items), "issues": [i.code for i in converted.issues]}
                 destination = args.output_dir / f"upstream-{index}.json"
-                destination.write_text(json.dumps(converted.payload, ensure_ascii=False, indent=2, allow_nan=False) + "\n")
+                destination.write_text(json.dumps(converted.payload, ensure_ascii=False, indent=2, allow_nan=False) + "\n", encoding="utf-8", newline="\n")
                 case["artifact"] = destination.name
                 report["cases"].append(case)
             report["inference_modules_loaded"] = [m for m in sys.modules if m.split(".")[0] in
@@ -74,11 +73,17 @@ def main():
         if report["unexpected_denials"] or report.get("inference_modules_loaded") or any(c["status"] != "success" for c in report["cases"]):
             report["status"] = "failed"
         report["elapsed_seconds"] = time.monotonic() - started
-        rss = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
-        report["process_peak_rss_bytes"] = rss if sys.platform == "darwin" else rss * 1024
+        if sys.platform == "win32":
+            report["process_peak_rss_bytes"] = None
+            report["memory_measurement_note"] = "resource.getrusage is unavailable on Windows; peak RSS was not measured"
+        else:
+            import resource
+
+            rss = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+            report["process_peak_rss_bytes"] = rss if sys.platform == "darwin" else rss * 1024
     elif not args.input:
         report["note"] = "Provide synthetic fixtures with --input after installing the audited documents group."
-    (args.output_dir / "report.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n")
+    (args.output_dir / "report.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
     print(json.dumps(report, ensure_ascii=False, indent=2))
     return 0 if report["status"] == "observed" else 1
 

@@ -1,0 +1,283 @@
+{
+  "date": "2026-10-19",
+  "scope": "M2 authored semantic corpus; not full M2 or real-document accuracy acceptance",
+  "platform": "Windows",
+  "python": "3.12.13",
+  "suite": "m2-authored-v1",
+  "dependency_lock_sha256": "6f885ace1718a280a6bfb2d0481534ea550fbf09e18a7feb41dc278bb2c72fb3",
+  "new_runtime_dependencies": [],
+  "manifest_sha256": "41b2537d85cfeb0d9b878d5a2b0433b6bebb67a77cb959320b485375da06693b",
+  "generator_sha256": "5f593ecef8ebdc015e850af6617b3a9ea068e48c40ac743a31d36a54462c3a88",
+  "evaluator_sha256": "d8810b7698f1dad2fdf962b17f449958f41bf2aa3f8b191dff1daeb135ed5ba9",
+  "passed": true,
+  "case_count": 15,
+  "passed_count": 15,
+  "observed_states": {
+    "succeeded": 7,
+    "ingest_rejected": 2,
+    "partial": 2,
+    "failed": 4
+  },
+  "cases": [
+    {
+      "id": "txt-unicode",
+      "file": "unicode.txt",
+      "passed": true,
+      "failures": [],
+      "input_sha256": "aa2a285edc78902528e0e70ecc98c618eb2ade8055c576b0e4dc614ec701f37d",
+      "status": "succeeded",
+      "engine": "knoa-text/1",
+      "result_status": "completed",
+      "issues": [],
+      "block_count": 1,
+      "elapsed_seconds": 0.43699999999989814
+    },
+    {
+      "id": "txt-invalid",
+      "file": "invalid.txt",
+      "passed": true,
+      "failures": [],
+      "input_sha256": "d1610dd763588f563c0900e730c7db2af1d058220d347e2e34864a8ac3169b75",
+      "status": "ingest_rejected",
+      "error_code": "invalid_encoding",
+      "elapsed_seconds": 0.0
+    },
+    {
+      "id": "json-nested",
+      "file": "nested.json",
+      "passed": true,
+      "failures": [],
+      "input_sha256": "f6e88422d884d903637e7add0c9e1d08bee8353dec1f7219bce7787a05e687ba",
+      "status": "succeeded",
+      "engine": "knoa-json/1",
+      "result_status": "completed",
+      "issues": [],
+      "block_count": 1,
+      "elapsed_seconds": 0.40599999999994907
+    },
+    {
+      "id": "json-duplicate",
+      "file": "duplicate.json",
+      "passed": true,
+      "failures": [],
+      "input_sha256": "d38245cfdb5d2239d67fe2a719312768b668a6928d8d97d04fbce83215e50b44",
+      "status": "ingest_rejected",
+      "error_code": "invalid_json",
+      "elapsed_seconds": 0.016000000000531145
+    },
+    {
+      "id": "word-complex",
+      "file": "complex.docx",
+      "passed": true,
+      "failures": [],
+      "input_sha256": "4b91797a22ffad53583f477b42c1b26ffa85d6a83cdba8962f28855b00b986bf",
+      "status": "succeeded",
+      "engine": "docling-slim/2.139.0",
+      "result_status": "completed",
+      "issues": [
+        "derived_locations"
+      ],
+      "block_count": 11,
+      "elapsed_seconds": 3.1400000000003274
+    },
+    {
+      "id": "slides-complex",
+      "file": "complex.pptx",
+      "passed": true,
+      "failures": [],
+      "input_sha256": "d1c10b8a7da5c139e066e573cb143b9f31f1c5c1577e1412f68c363d0bb53bc6",
+      "status": "succeeded",
+      "engine": "docling-slim/2.139.0",
+      "result_status": "completed",
+      "issues": [
+        "chart_visual_not_rendered",
+        "derived_locations"
+      ],
+      "block_count": 7,
+      "elapsed_seconds": 3.094000000000051
+    },
+    {
+      "id": "xlsx-types",
+      "file": "types.xlsx",
+      "passed": true,
+      "failures": [],
+      "input_sha256": "acafd0e44377c8c90cd6f135a08de7d90889ccc5e3b0fcde96871aca67f74720",
+      "status": "succeeded",
+      "engine": "docling-slim/2.139.0",
+      "result_status": "completed",
+      "issues": [
+        "chart_visual_not_rendered"
+      ],
+      "block_count": 19,
+      "elapsed_seconds": 3.125
+    },
+    {
+      "id": "xlsx-formulas",
+      "file": "formulas.xlsx",
+      "passed": true,
+      "failures": [],
+      "input_sha256": "e68511bd826ff348ea69a0a63eefe3ea1a91ac37a22d0ea79e2736bc43357c2a",
+      "status": "succeeded",
+      "engine": "docling-slim/2.139.0",
+      "result_status": "completed",
+      "issues": [],
+      "block_count": 5,
+      "elapsed_seconds": 3.061999999999898
+    },
+    {
+      "id": "pdf-cjk-rotated",
+      "file": "cjk.pdf",
+      "passed": true,
+      "failures": [],
+      "input_sha256": "94827d540a1b886cb9ef7c7c9d63eb940d18c5b4378109de76ff0b3328a25b9a",
+      "status": "succeeded",
+      "engine": "docling-slim/2.139.0",
+      "result_status": "completed",
+      "issues": [
+        "reading_order_unresolved"
+      ],
+      "block_count": 4,
+      "elapsed_seconds": 3.141000000000531
+    },
+    {
+      "id": "pdf-mixed",
+      "file": "mixed.pdf",
+      "passed": true,
+      "failures": [],
+      "input_sha256": "e064c3c66a299e8175b9460979d48b8d40356f611d4324030719697178b7e3ab",
+      "status": "partial",
+      "engine": "docling-slim/2.139.0",
+      "result_status": "partial",
+      "issues": [
+        "images_not_recognized",
+        "external_ocr_required",
+        "reading_order_unresolved"
+      ],
+      "block_count": 2,
+      "elapsed_seconds": 3.219000000000051
+    },
+    {
+      "id": "pdf-image-only",
+      "file": "image-only.pdf",
+      "passed": true,
+      "failures": [],
+      "input_sha256": "86724ff4cf93fd78fdd2e61abfdb6a45fe3c1caaba6444f2d048f4a45e83d56b",
+      "status": "partial",
+      "engine": "docling-slim/2.139.0",
+      "result_status": "partial",
+      "issues": [
+        "images_not_recognized",
+        "external_ocr_required",
+        "reading_order_unresolved"
+      ],
+      "block_count": 1,
+      "elapsed_seconds": 3.139999999999418
+    },
+    {
+      "id": "pdf-corrupt",
+      "file": "broken.pdf",
+      "passed": true,
+      "failures": [],
+      "input_sha256": "3af3705f6c6b6339d2763652305ac18935482a19c4fe88b9589472d1e82ac3a7",
+      "status": "failed",
+      "engine": "docling-slim/2.139.0",
+      "result_status": "failed",
+      "issues": [
+        "engine_reported_error",
+        "engine_incomplete",
+        "reading_order_unresolved"
+      ],
+      "block_count": 0,
+      "elapsed_seconds": 3.063000000000102
+    },
+    {
+      "id": "word-corrupt",
+      "file": "broken.docx",
+      "passed": true,
+      "failures": [],
+      "input_sha256": "d5da65208bff880c49f612df204f4008f148f685bfcc0f3a777ff3730d7d34ea",
+      "status": "failed",
+      "engine": "docling-slim/2.139.0",
+      "result_status": "failed",
+      "issues": [
+        "engine_reported_error",
+        "engine_incomplete",
+        "derived_locations"
+      ],
+      "block_count": 0,
+      "elapsed_seconds": 3.094000000000051
+    },
+    {
+      "id": "slides-corrupt",
+      "file": "broken.pptx",
+      "passed": true,
+      "failures": [],
+      "input_sha256": "81256fdfc4fc1a909d8976163b442bf1aa15908f109b24abbe3e165dc98b943d",
+      "status": "failed",
+      "engine": "docling-slim/2.139.0",
+      "result_status": "failed",
+      "issues": [
+        "engine_reported_error",
+        "engine_incomplete",
+        "derived_locations"
+      ],
+      "block_count": 0,
+      "elapsed_seconds": 3.375
+    },
+    {
+      "id": "xlsx-corrupt",
+      "file": "broken.xlsx",
+      "passed": true,
+      "failures": [],
+      "input_sha256": "411e3bdd4755a750cbd61848fdf843bcf11eb26f5126bd4ab98b6bfaa1f4f8c5",
+      "status": "failed",
+      "error_code": "execution_failed",
+      "elapsed_seconds": 1.2179999999998472
+    }
+  ],
+  "regressions": {
+    "full_environment": {
+      "run": 60,
+      "passed": 60,
+      "skipped": 0,
+      "elapsed_seconds": 83.6
+    },
+    "base_api_dev_environment": {
+      "run": 60,
+      "passed": 46,
+      "skipped": 14,
+      "elapsed_seconds": 8.754
+    },
+    "deterministic_fixture_bytes": true,
+    "oracle_negative_cases": [
+      "missing content despite completed status",
+      "out-of-bounds source locator",
+      "boolean converted to number",
+      "unknown golden check"
+    ],
+    "no_documents_full_suite": {
+      "exit_code": 1,
+      "blocked_cases": 11,
+      "passed_base_cases": 4
+    },
+    "explicit_base_suite": {
+      "case_count": 4,
+      "passed_count": 4
+    }
+  },
+  "fixes": [
+    "Preserve upstream native chart cells in unified table blocks with derived provenance",
+    "Do not invent source A1 locations for reconstructed chart cells",
+    "Native PDF headers no longer hide unread bitmap coverage gaps"
+  ],
+  "limitations": [
+    "Synthetic content only; not a real-document accuracy score",
+    "PDF test CMap is authored; font rendering fidelity is not evaluated",
+    "Bitmap PDF pages conservatively return partial, including decorative images",
+    "Word revisions verified only as inserted/final text; revision history is not exposed",
+    "Only a basic native column chart was accepted; arbitrary charts/SmartArt not proven",
+    "Source Word XML/PPT shape locations remain derived, not original IDs",
+    "No external OCR/layout service, no real-document accuracy score or peak-memory benchmark",
+    "POSIX branches and remote CI not rerun on this Windows host"
+  ]
+}

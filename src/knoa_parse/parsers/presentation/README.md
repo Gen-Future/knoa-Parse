@@ -12,9 +12,9 @@
 
 ## 定位与输出
 
-slide index、shape ID、形状区域、备注/正文角色。
+当前保留 slide index、备注/正文角色及派生树指针；尚不输出源 shape ID 和精确形状区域。
 
-现有 v0.1.0-draft.1 不一定能表达本家族全部结构，按 [结果模型](../../../../docs/result-model.md) 升级契约后再开放相应能力。
+当前输出 v0.2.0-draft.1，见 [结果模型](../../../../docs/result-model.md)。上游提取的原生图表映射为 table，data.role=native_chart；图表视觉未渲染时明确 warning，不调用模型。分组、跨页重复、备注、合并表格与原生柱状图见 [M2 覆盖](../../../../evals/m2-coverage.md)。
 
 ## 依赖边界
 

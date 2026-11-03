@@ -11,3 +11,5 @@
 运行时还校验唯一 ID、引用完整性、来源 artifact 摘要/大小、正向跨度与状态/缺口一致性。JSON Schema 无法单独表达这些跨字段条件，消费方需实施同等语义校验。当前仅声明已实现的对象；幻灯片形状、派生变换和 ProviderInvocation 等在相应能力落地时继续演进草案。
 
 Office/原生 PDF 在已审计的 documents 组中启用。Word/PPT 的 document_node 定位到保留的上游 JSON 树；空 pointer 可以表示原始文档容器整体。Excel 原始字段用 sheet_range，PDF 区域用原件页码/点数。图片块 data.image_artifact_id 指向派生图片，完整上游树作为 engine_result 产物保存。媒体尚未启用。
+
+原生图表数据使用现有 table 块：data.role 为 native_chart，rows/columns/cells 保留上游已提取的类别、系列和数值，chart_types 保留原生类型映射；定位为派生树 derived_exact，不等同原 Excel 单元格或源 PPT shape。未渲染视觉可有 chart_visual_not_rendered warning。PDF 含未识别位图时保守返回 partial 和 external_ocr_required error；存在原生文字不消除该缺口。这些是既有 data/Issue/Coverage 结构的语义说明，没有新增顶层字段。

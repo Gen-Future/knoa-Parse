@@ -15,16 +15,13 @@ class PdfParser(NativeDocumentParser):
             items = [i for i in document.items if any(p["page"] == page for p in i.locations)]
             has_text = any(i.text and i.text.strip() for i in items)
             has_image = any(i.kind == "image" for i in items)
-            if has_image and not has_text:
+            if has_image:
                 issues.append(Issue(code="external_ocr_required", severity="error", unit_id=unit,
-                                    message="Image-only page has no native text; external OCR is not configured"))
+                                    message="Page contains unread bitmap content; native text, if present, does not prove full text coverage. External OCR is not configured"))
                 coverage.append(Coverage(unit_id=unit, status="failed", issue_codes=["external_ocr_required"]))
             else:
                 coverage.append(Coverage(unit_id=unit, status="completed"))
-                if has_image:
-                    issues.append(Issue(code="image_text_unread", severity="warning", unit_id=unit,
-                                        message="Embedded images retained; their text has not been recognized"))
-                elif not has_text:
+                if not has_text:
                     issues.append(Issue(code="no_native_content", severity="warning", unit_id=unit,
                                         message="No native text or bitmap found; this does not prove the page is visually empty"))
         if not coverage:

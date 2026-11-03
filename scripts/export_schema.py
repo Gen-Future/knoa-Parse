@@ -19,4 +19,4 @@ def schema():
 if __name__ == "__main__":
     path = ROOT / "contracts" / ("v" + SCHEMA_VERSION) / "parse-result.schema.json"
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(schema(), ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    path.write_text(json.dumps(schema(), ensure_ascii=False, indent=2) + "\n", encoding="utf-8", newline="\n")
