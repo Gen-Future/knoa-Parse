@@ -1,12 +1,13 @@
 # 解析架构
 
-当前基线是 **按资料类型组织流程，复用成熟项目的转换与内容增强能力，模型步骤接外部服务**。当前文本/JSON 与 DOCX/PPTX/XLSX/原生 PDF 的初始路径已实现，文档组按安装审计决定可用性。Python 3.12 环境及完整锁已验证；模型供应商尚未接入。
+当前基线是 **按资料类型组织流程，复用成熟项目的转换与内容增强能力，模型步骤接外部服务**。当前文本/JSON 与 DOCX/PPTX/XLSX/原生 PDF 的初始路径已实现，文档组按安装审计决定可用性。Python 3.12 环境及完整锁已验证；外部文本模型通过 core 协议、providers 适配和 apps 注入接入，当前开放独立 CLI/API，见 [模型接入](model-services.md)。原生解析 worker 保持离线。
 
 ## 目录与依赖
 
 ```text
 src/knoa_parse/apps/
   api/                       API 接入、认证和任务查询；另提供 CLI 入口
+  console/                   可选静态工作台及同源 API 装配；不被解析模块依赖
   worker/                    调度、注册解析器、注入工具及服务
 src/knoa_parse/
   core/                      类型、接口、来源、任务、分派与结果规则
@@ -84,5 +85,7 @@ flowchart TD
 解析内容始终视为资料，不执行其中的脚本、宏、公式或模型提示。解包、XML、子进程和媒体解码需有字节、时长、页数、递归深度和超时限制。转换保存新的 artifact 与原文映射，不能把转换后的页码宣称为源 DOCX 固有页码。
 
 Knoa Parse 不生成长期画像，不访问主仓数据库。主仓导入时核对结果与任务、来源和空间的绑定。
+
+可选观测工作台只通过 HTTP API 操作同一任务服务，见 [ADR 0005](adr/0005-optional-observation-console.md)。解析器、引擎和 worker 不认识 UI，未上报的阶段、百分比、耗时、费用和心跳不因界面需要而伪造。
 
 进一步阅读：[类型与模型边界](adr/0002-format-pipelines-and-remote-models.md)、[接入边界决策](adr/0004-selective-module-integration.md)、[实现方案](implementation-plan.md)、[处理流程](pipelines.md)、[外部能力接口](provider-interfaces.md)、[结果模型](result-model.md)、[横向调查](research/2026-10-15-module-selection.md)。

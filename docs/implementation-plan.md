@@ -4,7 +4,7 @@
 
 ## 1. 目标与范围
 
-Knoa Parse 把文件变成结构化、可定位、可核对完整性的证据。统一 API 与 CLI 对接 Knoa 或其他产品，首版单机单实例。首批文档能力逐格式开放，随后加入外部文档分析、音频和视频；不建设独立解析 UI。
+Knoa Parse 把文件变成结构化、可定位、可核对完整性的证据。统一 API 与 CLI 对接 Knoa 或其他产品，首版单机单实例。首批文档能力逐格式开放，随后加入外部文档分析、音频和视频。2026-10-19 按用户新增任务补充一个可移除的观测工作台，见 [ADR 0005](adr/0005-optional-observation-console.md)；它不约束解析管线或改变证据语义。
 
 只承担输入探测、格式结构、自然单元划分、必要外部识别/理解、来源与派生关系、结果导出。不承担 embedding、检索切块、知识图谱、Agent 编排、长期记忆、资料爬虫或推理服务部署。
 
@@ -68,7 +68,7 @@ src/knoa_parse/apps/
   worker/               注册、调度、租约、子进程和能力装配
 src/knoa_parse/
   core/                 来源、产物、任务、错误、契约与少量接口
-  parsers/              按资料类型编排；13 个家族保持 planned
+  parsers/              按资料类型编排；13 个家族，按已验收后缀分别启用
   engines/              一个 Docling 转换适配与结果映射
   enrichment/           上下文选择、请求预算、增强与证据关联
   processors/           媒体/容器操作和有限原始字段补充
@@ -91,7 +91,7 @@ EngineResult 是内部对象：结构块、定位、产物、issues、上游运�
 
 ## 5. 统一证据契约
 
-按 [结果模型](result-model.md) 落地新的 `0.2.0-draft.1`，保留 `0.1.0-draft.1` 及回归。升级前先用真实/合成产物核对表达能力，新版本名称仍是计划。主仓独立评审消费迁移后显式同步，本轮不改主仓快照。
+按 [结果模型](result-model.md) 已落地 `0.2.0-draft.1`，保留 `0.1.0-draft.1` 及回归。当前实现已用合成产物核对初始文档的表达能力，复杂资料仍需扩充验收。主仓独立评审消费迁移后显式同步，本轮不改主仓快照。
 
 核心对象为 SourceVersion、Artifact、ContentBlock、Locator、Derivation、Coverage、Issue、ProviderInvocation。
 
@@ -121,6 +121,8 @@ EngineResult 是内部对象：结构块、定位、产物、issues、上游运�
 | `GET /v1/artifacts/{id}` | 经过来源/任务授权检查的产物读取 |
 
 CLI 提供 parse、status、result、capabilities，并复用同一应用层。对外不出现 Docling class、MinerU content_list 或上游开关名称；诊断可显示引擎版本和许可来源。
+
+上表保留完整目标协议。当前已实现请求字段为 `source_id`（不是表中规划的 `source_version_id`），仅开放 `native_extract`；单元进度、执行恢复、Provider 调用及部分规划选项尚未实现。实际调用以 README 和当前 API 模型为准，不能直接把完整计划当作现有接口。
 
 ### 目标与执行
 
@@ -192,6 +194,8 @@ SQLite 保存任务、单元、租约、artifact 元数据与外部调用账目�
 M0 先解决最可能推翻选型的问题，避免先写大量适配代码再发现运行依赖或来源信息不符合要求。文档、音频、视频分别发布能力，不用等待所有家族齐备。
 
 ## 10. 升级、退出与当前状态
+
+2026-10-19 M3-A 已实现同步单页文档分析内部协议、显式 dry-run 及独立页级编排；不开放 document_understanding，不改变 native_extract。真实服务、页图渲染、异步/持久化恢复与新版产品结果仍待实施，细节见 [M3-A](m3-document-analysis.md)。
 
 依赖采用固定版本和 hash；源码迁移若发生，另记录原仓库、固定提交、路径、许可、测试来源和差异，保留归属。项目自身许可证尚未定，分发前确认与已选依赖兼容。FFmpeg 以实际构建清单核对许可，不把所有构建统一标为同一种许可证。
 

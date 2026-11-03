@@ -1,6 +1,6 @@
 # 外部文档分析服务适配
 
-状态：接口规划，尚无供应商实现或凭据。
+状态：core/document_analysis.py 已定义同步单页内部协议，enrichment/document.py 提供独立页级编排；http.py 提供不绑定厂商的 HTTPS/受控 JSON transport。尚无真实供应商实现或凭据，不开放产品目标。合成 Provider 只位于 evals，不进入本目录或产品能力清单；见 [M3-A](../../../../docs/m3-document-analysis.md) 和 [M3-B](../../../../testing/changes/2026-10-22-m3b-http-provider-after.md)。
 
 文档或页图 → 块、表格、页面区域与阅读顺序。
 
