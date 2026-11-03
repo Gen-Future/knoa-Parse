@@ -1,17 +1,17 @@
 # Knoa Parse 待办与能力闸门
 
-更新日期：2026-11-03。这里记录尚未完成、不能从自动测试推断完成、或必须经过人工/真实服务验收后才能开放的事项。勾选代码测试不等于解除能力闸门；每项开放前必须补开发前需求、执行记录和开发后不确定项。
+更新日期：2026-11-04。这里记录尚未完成、不能从自动测试推断完成、或必须经过人工/真实服务验收后才能开放的事项。勾选代码测试不等于解除能力闸门；每项开放前必须补开发前需求、执行记录和开发后不确定项。
 
 ## 当前明确未开放
 
 - [ ] **OCR / 扫描 PDF**：没有本地 OCR，也没有真实外部 OCR/文档分析服务接入；含位图页面仍按 `external_ocr_required` 返回 partial。M3-A/M3-B 的 mock 和 HTTP transport 不构成 OCR 能力。
 - [ ] **复杂 PDF 理解**：阅读顺序、表格恢复、标题层级、矢量文字/图形语义和复杂裁切/旋转未验收。
 - [ ] **document_understanding 任务目标**：API、CLI、worker、console 的能力清单仍只开放 `native_extract`，不得手工添加目标名。
-- [ ] **真实供应商**：尚未选择或验证厂商的协议、数据区域、隐私边界、版本、SLA、限流、幂等、取消和计费。
+- [ ] **真实供应商**：Azure Document Intelligence 已作为首个候选并完成离线 REST adapter 基础，但尚未验证项目账户的协议版本、数据区域、隐私边界、SLA、限流、幂等、取消和计费。
 - [ ] **真实页图准备**：已完成输入页与 full_page_upright 栅格的摘要、媒体、页集合、旋转和宽高比前置校验；PDF 页面渲染、旋转/裁切效果、像素到 pt 的真实校准仍未完成。当前适配器要求上游提供已验证的 `full_page_upright`。
 - [ ] **PDF 渲染器**：已完成显式 Renderer 注入、源字节预检和页图资源预算；尚未选择或安装具体非模型渲染库，也未完成进程级超时、字体、裁切、旋转、质量和许可证验收。
 - [ ] **真实效果**：没有去敏中文标注集、文字/区域/表格指标或人工抽查结果，不能报告 OCR 准确率。
-- [ ] **异步远端恢复**：ProviderInvocation、远端 job ID、查询/取消、崩溃恢复和重复计费保护尚未持久化。
+- [ ] **异步远端恢复**：Azure adapter 可保留远端 job ID 并在未知/超时错误上停止自动重试；ProviderInvocation、query/cancel、崩溃恢复和重复计费保护尚未接入产品持久化。
 - [ ] **调用账目持久化**：已完成 SQLite schema 版本、ProviderInvocation 写入/读取、幂等冲突、状态迁移和并发保护；worker 崩溃恢复、真实幂等/query/cancel、账单证据和长期保留仍未完成。
 - [ ] **Provider 生命周期接入**：已完成内部 Coordinator 的计划、提交、终态、显式 retry 和恢复查询；worker 调用顺序、远端 query/cancel、artifact 发布和 API/console 展示仍未完成。
 - [ ] **页级 Provider 执行**：已完成未注册的同步执行边界和 unknown 保护；真实 worker 子进程、异步 job、artifact/ParseResult 事务和产品路由仍未完成。
@@ -26,8 +26,8 @@
 
 ## 后续开发顺序
 
-1. 先确定真实文档分析服务和数据边界，写 `testing/changes/*-before.md`。
-2. 实现真实服务专用 adapter；保留通用 transport，不能让厂商响应直接进入公共契约。
+1. 先确定真实文档分析服务和数据边界，写 `testing/changes/*-before.md`；Azure 当前只是候选，不等于生产选定。
+2. 完成真实服务专用 adapter 的联调；保留通用 transport，不能让厂商响应直接进入公共契约。
 3. 完成页图渲染和几何映射，保存原始响应/派生关系，补真实标注集和效果报告。
 4. 定义新版本 `document_understanding` 结果与调用账目，再接入 Store、worker、API 和 console。
 5. 只有真实效果、成本、失败/取消/恢复和安全边界通过后，才更新 catalog/capabilities 为 enabled。

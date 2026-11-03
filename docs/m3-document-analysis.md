@@ -57,7 +57,7 @@ mock 必须显式 dry_run=true，否则外发前拒绝。报告和每次调用�
 
 ## 后续产品接入
 
-通用 HTTP transport 已作为独立适配器骨架实现于 `providers/document_analysis/http.py`，协议测试使用本地合成服务；它不属于产品能力。真实服务选型、页图、效果、费用与恢复的待办见 [M3-B after](../testing/changes/2026-10-22-m3b-http-provider-after.md)。
+通用 HTTP transport 已作为独立适配器骨架实现于 `providers/document_analysis/http.py`；Azure Document Intelligence 的单页 REST adapter 已在 `providers/document_analysis/azure.py` 完成离线基础，协议测试使用本地合成服务；两者都不属于产品能力。候选调查见 [M3-I](research/2026-11-04-document-provider-selection.md)，开发记录见 [M3-I after](../testing/changes/2026-11-04-m3i-azure-adapter-after.md)。
 
 1. 选择一个满足需求的外部服务，调查传输、区域/资料边界、精确定位、模型版本、限额、异步/幂等/取消与计费方式。不能把已有文本模型协议直接宣称为 OCR。
 2. 实现并验收全页渲染和来源几何映射，保存页图、实际服务原始响应与必要派生关系。
