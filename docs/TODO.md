@@ -21,6 +21,7 @@
 - [ ] **ASR 真实联调**：M4-B 已定义独立外部 ASR 契约和离线 HTTP adapter；真实供应商选择、效果/语言、异步恢复、分段去重、计费和 `transcribe`/`video_understanding` 产品路由仍未完成。
 - [ ] **场景检测真实接入**：M4-C 已完成不含解码器的 PTS/覆盖/区间关联规则；PySceneDetect 版本与 detector 参数、真实帧抽样、黑帧/淡入淡出和跨轨同步仍未验收。
 - [ ] **音频分段与字幕产品接入**：M4-D 已定义受限重叠 chunk 和 SRT/WebVTT 解析；FFmpeg 实际裁剪、容器字幕抽取、编码延迟、ASR 边界去重和成本账目仍未完成。
+- [ ] **M4 真实验收**：M4-A～E 完成离线边界，但没有真实 FFmpeg/ffprobe、PySceneDetect、ASR 账户和去敏音视频集；VFR、无音轨、外部缺段、抽样覆盖、效果与费用仍不得宣称完成。
 
 ## M1/M2 仍待完成
 
