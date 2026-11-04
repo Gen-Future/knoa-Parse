@@ -1,6 +1,6 @@
 # Knoa Parse 待办与能力闸门
 
-更新日期：2026-11-04。这里记录尚未完成、不能从自动测试推断完成、或必须经过人工/真实服务验收后才能开放的事项。勾选代码测试不等于解除能力闸门；每项开放前必须补开发前需求、执行记录和开发后不确定项。
+更新日期：2026-11-05。这里记录尚未完成、不能从自动测试推断完成、或必须经过人工/真实服务验收后才能开放的事项。勾选代码测试不等于解除能力闸门；每项开放前必须补开发前需求、执行记录和开发后不确定项。
 
 ## 当前明确未开放
 
@@ -20,7 +20,7 @@
 - [ ] **外部 ASR 与场景生产能力**：M4 已定义并实现独立外部 ASR、字幕和 PySceneDetect 场景契约；真实效果和产品开放仍受验收闸门控制，不得安装 Whisper、神经 VAD 或本地视觉模型。
 - [ ] **ASR 真实联调**：Azure Speech fast transcription 2025-10-15 已作为首个候选并完成离线 adapter；真实区域/中文效果、异步恢复、分段去重、计费和 `transcribe`/`video_understanding` 产品路由仍未完成。
 - [ ] **场景检测真实扩展**：M4-F 已接入并验收 PySceneDetect 0.7.2 ContentDetector 的合成 MP4；真实 VFR、黑帧/淡入淡出、快速剪辑和跨轨同步仍未验收。
-- [ ] **音频分段与字幕产品接入**：M4-H 已完成真实 FFmpeg chunk 裁剪和独立转录编排；容器字幕抽取、编码延迟、ASR 边界去重、成本账目及 worker/API 路由仍未完成。
+- [ ] **音频分段与字幕产品接入**：M4-H 已完成真实 FFmpeg chunk 裁剪和独立转录编排，M4-K 已完成受控容器 subtitle stream 提取；编码延迟、真实字幕样本、ASR 边界去重、成本账目及 worker/API 路由仍未完成。
 - [ ] **M4 真实服务验收**：本机 FFmpeg/PySceneDetect 工具链已有合成 MP4 证据，但没有真实 ASR 账户、去敏语音集、外部缺段/账单和真实长 VFR 集；`transcribe`/`video_understanding` 仍不得开放。
 - [ ] **媒体产品接入**：M4-I 已修复 processor 边界和执行安全问题；media job 的 worker/API 路由、ProviderInvocation 持久化、query/cancel 和恢复仍未完成。
 - [ ] **媒体 job 路由**：M4-J 已提供 worker 装配入口和 per-chunk ledger；真实 job target、artifact publisher、远端 query/cancel 和跨进程恢复仍需真实服务验收。
