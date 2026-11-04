@@ -61,7 +61,7 @@
 - [x] M4-I-缺陷修复：路径边界、负 PTS/stream origin、bounded subprocess、总 deadline、取消、重叠去重和 worker 媒体工具白名单；见 [开发后记录](../testing/records/2026-11-04-m4i-media-defect-fixes.md)。
 - [x] M4-J-调用账目装配：media runner 通过 apps/worker 接入 Store/InvocationCoordinator；见 [开发后记录](../testing/records/2026-11-04-m4j-media-ledger-assembly.md)。公开目标仍关闭。
 - [x] M4-K-容器字幕：受控 FFmpeg subtitle stream 提取并接入 WebVTT 时间线；见 [开发后记录](../testing/records/2026-11-04-m4k-subtitle-extraction.md)。
-- [x] M4-开发阶段完成：A-H 代码、阶段测试、真实本地媒体工具链和文档审计完成；见 [M4 完成审计](../testing/records/2026-11-04-m4-completion-audit.md)。
+- [x] M4-开发阶段完成：A-K 代码、阶段测试、真实本地媒体工具链和文档审计完成；见 [M4 完成审计](../testing/records/2026-11-04-m4-completion-audit.md)。
 - [ ] M4-生产验收：FFmpeg/ffprobe 与 PySceneDetect 跨平台、外部 ASR、字幕/场景/转录关联、VFR/无音轨/覆盖和费用通过真实资料验收后才开放目标。
 - [ ] 验证 VFR 与实际 PTS、抽样覆盖、无音轨、外部缺段与费用边界。
 - [ ] 仅转录与完整音画目标分开声明，mock 不构成真实能力证明。

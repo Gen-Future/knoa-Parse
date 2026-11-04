@@ -52,6 +52,9 @@ class SceneCoverage(Model):
     def covered(self):
         if self.covered_ms > self.requested.end_ms - self.requested.start_ms:
             raise ValueError("Sample coverage exceeds requested timeline")
+        if any(item.start_ms < self.requested.start_ms or item.end_ms > self.requested.end_ms
+               for item in self.sampled_ranges):
+            raise ValueError("Sample range falls outside requested timeline")
         return self
 
 

@@ -54,7 +54,7 @@ $env:KNOA_PARSE_DATA_DIR = "$PWD\.local\knoa-parse"
 1. 默认 GBK 解码导致契约及 catalog 检查失败：文件读取显式使用 UTF-8；CLI JSON 输出也固定 UTF-8，覆盖中文和 emoji。
 2. 上传和结果发布在写句柄未关闭时重命名/删除临时文件，触发 WinError 32：关闭写句柄后再探测、发布和清理。
 3. worker 无条件导入 POSIX resource，以及使用 killpg/SIGKILL：POSIX 保留文件上限和进程组终止；Windows 直接终止当前解析子进程并等待退出，取消/超时测试核对进程确已结束。
-4. 两种平台均在写结果前检查 UTF-8 结果字节及派生产物的合计预算，父进程继续验证大小、摘要和租约。Windows 没有 POSIX 的 RLIMIT_FSIZE，应用层检查不是 OS 级磁盘隔离；未来允许媒体子进程时仍需另做进程树管理。
+4. 两种平台均在写结果前检查 UTF-8 结果字节及派生产物的合计预算，父进程继续验证大小、摘要和租约。媒体 processor 使用受控 FFmpeg/ffprobe 子进程、stdout 上限和总时限；Windows 没有 POSIX 的 RLIMIT_FSIZE，应用层检查仍不是 OS 级磁盘隔离。
 5. 原始 Docling 实验脚本无条件导入 resource：Windows 仍执行转换与网络/进程审计，峰值 RSS 未测量时明确记为 null。
 6. 主仓摘要清单检查把反斜杠与清单中的正斜杠比较，误报文件集合不一致：检查路径统一为 POSIX 表示，摘要和契约本身不变。
 
