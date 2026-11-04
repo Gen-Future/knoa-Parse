@@ -1,9 +1,23 @@
 """Media coverage and cost summaries kept separate from ParseResult."""
-from typing import Literal
+from typing import Literal, Protocol
 
 from pydantic import Field, model_validator
 
 from .models import Model
+
+
+class MediaInvocationUnit(Model):
+    unit_id: str = Field(min_length=1, max_length=200)
+    request_fingerprint: str = Field(pattern="^[a-f0-9]{64}$")
+
+
+class MediaInvocationPort(Protocol):
+    def plan(self, units: list[MediaInvocationUnit]): ...
+    def current(self, unit_id: str): ...
+    def submit(self, unit_id: str): ...
+    def succeed(self, unit_id: str, response_artifact_id: str, usage=None, billing_state="known"): ...
+    def unknown(self, unit_id: str, error_code: str): ...
+    def cancel(self, unit_id: str): ...
 
 
 class MediaChunkOutcome(Model):

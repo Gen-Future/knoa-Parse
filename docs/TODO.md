@@ -23,6 +23,8 @@
 - [ ] **音频分段与字幕产品接入**：M4-H 已完成真实 FFmpeg chunk 裁剪和独立转录编排；容器字幕抽取、编码延迟、ASR 边界去重、成本账目及 worker/API 路由仍未完成。
 - [ ] **M4 真实服务验收**：本机 FFmpeg/PySceneDetect 工具链已有合成 MP4 证据，但没有真实 ASR 账户、去敏语音集、外部缺段/账单和真实长 VFR 集；`transcribe`/`video_understanding` 仍不得开放。
 - [ ] **媒体产品接入**：M4-I 已修复 processor 边界和执行安全问题；media job 的 worker/API 路由、ProviderInvocation 持久化、query/cancel 和恢复仍未完成。
+- [ ] **媒体 job 路由**：M4-J 已提供 worker 装配入口和 per-chunk ledger；真实 job target、artifact publisher、远端 query/cancel 和跨进程恢复仍需真实服务验收。
+- [ ] **字幕真实样本**：M4-K 已实现容器 subtitle stream 的 FFmpeg 提取；ASS/SSA、多轨、编码、样式和真实时间偏移仍需验收。
 
 ## M1/M2 仍待完成
 

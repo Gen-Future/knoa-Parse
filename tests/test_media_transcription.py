@@ -1,5 +1,7 @@
 import hashlib
+import tempfile
 import unittest
+from pathlib import Path
 
 from knoa_parse.core.asr import AsrResponse, AsrUsage, TranscriptSegment
 from knoa_parse.core.errors import ProviderError
@@ -7,6 +9,9 @@ from knoa_parse.core.media import MediaProbe, MediaStream, MediaTimeBase, MediaP
 from knoa_parse.core.models import Artifact
 from knoa_parse.processors.media.ffmpeg import MediaTranscriptionRunner
 from knoa_parse.processors.media.source import StagedMedia
+from knoa_parse.core.settings import Settings
+from knoa_parse.core.store import Store
+from knoa_parse.enrichment.invocations import InvocationCoordinator
 from tests.test_media_timeline import _probe
 
 
@@ -100,6 +105,21 @@ class MediaTranscriptionTests(unittest.TestCase):
         self.assertEqual(len(cancelled_provider.calls), 1)
         self.assertEqual(len(cancelled.failed_chunk_ids), 3)
         self.assertEqual(cancelled.summary.coverage.status, "failed")
+
+    def test_optional_coordinator_persists_submit_unknown_and_success(self):
+        source_bytes = b"source"
+        source = StagedMedia(MediaProbeInput(source_id="source", source_sha256=hashlib.sha256(source_bytes).hexdigest(),
+                                             size_bytes=len(source_bytes)), Path(__file__))
+        with tempfile.TemporaryDirectory() as directory:
+            store = Store(Settings(Path(directory)))
+            coordinator = InvocationCoordinator(store, "run-media", "synthetic", "transcribe", "b" * 64)
+            result = MediaTranscriptionRunner(
+                _Extractor(), _Provider(), coordinator=coordinator,
+                publish_response=lambda response, invocation_id: f"artifact-{invocation_id}",
+            ).transcribe(source, _probe(duration=5000), max_segment_ms=3000, overlap_ms=500)
+            records = store.list_invocations("run-media")
+            self.assertEqual([record.state for record in records], ["succeeded", "unknown", "succeeded"])
+            self.assertEqual(len(result.failed_chunk_ids), 1)
 
 
 if __name__ == "__main__":

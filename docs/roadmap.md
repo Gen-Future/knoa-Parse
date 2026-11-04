@@ -59,6 +59,8 @@
 - [x] M4-G-ASR 适配器：选择并接入 Azure Speech fast transcription REST 2025-10-15 的 multipart、词级时间、speaker 和偏移映射；见 [开发后记录](../testing/records/2026-11-04-m4g-azure-speech.md)。未真实联调，未开放转录目标。
 - [x] M4-H-转录编排：真实 FFmpeg 音频裁剪、ASR 注入、chunk outcome、时间偏移和覆盖/费用摘要串联；见 [开发后记录](../testing/records/2026-11-04-m4h-media-transcription.md)。未接 worker/API/真实 ASR。
 - [x] M4-I-缺陷修复：路径边界、负 PTS/stream origin、bounded subprocess、总 deadline、取消、重叠去重和 worker 媒体工具白名单；见 [开发后记录](../testing/records/2026-11-04-m4i-media-defect-fixes.md)。
+- [x] M4-J-调用账目装配：media runner 通过 apps/worker 接入 Store/InvocationCoordinator；见 [开发后记录](../testing/records/2026-11-04-m4j-media-ledger-assembly.md)。公开目标仍关闭。
+- [x] M4-K-容器字幕：受控 FFmpeg subtitle stream 提取并接入 WebVTT 时间线；见 [开发后记录](../testing/records/2026-11-04-m4k-subtitle-extraction.md)。
 - [x] M4-开发阶段完成：A-H 代码、阶段测试、真实本地媒体工具链和文档审计完成；见 [M4 完成审计](../testing/records/2026-11-04-m4-completion-audit.md)。
 - [ ] M4-生产验收：FFmpeg/ffprobe 与 PySceneDetect 跨平台、外部 ASR、字幕/场景/转录关联、VFR/无音轨/覆盖和费用通过真实资料验收后才开放目标。
 - [ ] 验证 VFR 与实际 PTS、抽样覆盖、无音轨、外部缺段与费用边界。

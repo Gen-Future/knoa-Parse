@@ -8,8 +8,9 @@ from typing import Protocol
 
 from knoa_parse.core.asr import AsrProvider, AsrRequest, AsrResponse, AsrUsage, PreparedAudioSegment
 from knoa_parse.core.errors import ParseError, ProviderError
+from knoa_parse.core.provider_runs import ProviderUsage
 from knoa_parse.core.media import MediaProbeInput
-from knoa_parse.core.media_results import MediaChunkOutcome, MediaExecutionSummary
+from knoa_parse.core.media_results import MediaChunkOutcome, MediaExecutionSummary, MediaInvocationPort, MediaInvocationUnit
 from knoa_parse.core.models import Artifact, Model
 from knoa_parse.core.timeline import AudioChunk
 
@@ -122,9 +123,13 @@ class MediaTranscriptionResult(Model):
 class MediaTranscriptionRunner:
     """Connect probe → FFmpeg chunks → injected external ASR → coverage gate."""
 
-    def __init__(self, extractor: AudioExtractor, provider: AsrProvider):
+    def __init__(self, extractor: AudioExtractor, provider: AsrProvider,
+                 coordinator: MediaInvocationPort | None = None,
+                 publish_response=None):
         self.extractor = extractor
         self.provider = provider
+        self.coordinator = coordinator
+        self.publish_response = publish_response
 
     def transcribe(self, source: StagedMedia, probe, *, max_segment_ms: int,
                    overlap_ms: int = 0, language: str | None = None,
@@ -143,9 +148,18 @@ class MediaTranscriptionRunner:
         failed = []
         seen_segments: set[tuple[str, str | None, int]] = set()
         deadline = time.monotonic() + timeout_seconds
+        if self.coordinator is not None:
+            fingerprints = [hashlib.sha256(
+                f"{source.source_sha256}:{chunk.id}:{chunk.request_start_ms}:{chunk.request_end_ms}:"
+                f"{language}:{word_timestamps}:{diarization}".encode("utf-8")
+            ).hexdigest() for chunk in chunks]
+            self.coordinator.plan([MediaInvocationUnit(unit_id=chunk.id, request_fingerprint=fingerprint)
+                                   for chunk, fingerprint in zip(chunks, fingerprints)])
         for chunk in chunks:
             if cancelled() or time.monotonic() >= deadline:
                 issue = "media_cancelled" if cancelled() else "media_timeout"
+                if self.coordinator is not None and self.coordinator.current(chunk.id).state == "planned":
+                    self.coordinator.cancel(chunk.id)
                 outcomes.append(MediaChunkOutcome(chunk_id=chunk.id, core_start_ms=chunk.core_start_ms,
                                                   core_end_ms=chunk.core_end_ms, status="failed", issue_code=issue))
                 failed.append(chunk.id)
@@ -153,12 +167,22 @@ class MediaTranscriptionRunner:
             try:
                 remaining = max(0.1, deadline - time.monotonic())
                 segment = self.extractor.extract(source, chunk, timeout_seconds=remaining)
+                submitted = self.coordinator.submit(chunk.id) if self.coordinator is not None else None
                 request = AsrRequest(segment=segment, language=language, word_timestamps=word_timestamps,
                                      diarization=diarization, timeout_seconds=min(remaining, 300),
                                      trace_id=f"{source.source_id}:{chunk.id}", idempotency_key=chunk.id)
                 response = self.provider.transcribe(request)
                 if cancelled():
                     raise ProviderError("provider_cancelled_after_send", "Transcription cancelled after sending", retryable=False)
+                if self.coordinator is not None:
+                    if self.publish_response is None:
+                        raise ParseError("media_response_publisher_required", "A response publisher is required for durable media execution", 500)
+                    artifact_id = self.publish_response(response, submitted.id)
+                    self.coordinator.succeed(
+                        chunk.id, artifact_id,
+                        ProviderUsage(cost_micros=response.usage.cost_micros),
+                        billing_state="known" if response.usage.cost_micros is not None else "unknown",
+                    )
                 filtered = []
                 for item in response.segments:
                     if item.end_ms <= chunk.core_start_ms or item.start_ms >= chunk.core_end_ms:
@@ -173,16 +197,34 @@ class MediaTranscriptionRunner:
                                                   core_end_ms=chunk.core_end_ms, status="completed"))
                 usages.append(response.usage)
             except ProviderError as error:
+                if self.coordinator is not None:
+                    current = self.coordinator.current(chunk.id)
+                    if current.state == "planned":
+                        self.coordinator.cancel(chunk.id)
+                    elif current.state in {"submitted", "unknown"}:
+                        self.coordinator.unknown(chunk.id, error.code)
                 outcomes.append(MediaChunkOutcome(chunk_id=chunk.id, core_start_ms=chunk.core_start_ms,
                                                   core_end_ms=chunk.core_end_ms, status="failed", issue_code=error.code))
                 failed.append(chunk.id)
                 if error.code not in {"provider_invalid_request", "provider_request_limit"}:
                     usages.append(AsrUsage(input_ms=chunk.request_end_ms - chunk.request_start_ms, cost_micros=None))
             except ParseError as error:
+                if self.coordinator is not None:
+                    current = self.coordinator.current(chunk.id)
+                    if current.state == "planned":
+                        self.coordinator.cancel(chunk.id)
+                    elif current.state in {"submitted", "unknown"}:
+                        self.coordinator.unknown(chunk.id, error.code)
                 outcomes.append(MediaChunkOutcome(chunk_id=chunk.id, core_start_ms=chunk.core_start_ms,
                                                   core_end_ms=chunk.core_end_ms, status="failed", issue_code=error.code))
                 failed.append(chunk.id)
             except Exception:
+                if self.coordinator is not None:
+                    current = self.coordinator.current(chunk.id)
+                    if current.state == "planned":
+                        self.coordinator.cancel(chunk.id)
+                    elif current.state in {"submitted", "unknown"}:
+                        self.coordinator.unknown(chunk.id, "media_execution_unknown")
                 outcomes.append(MediaChunkOutcome(chunk_id=chunk.id, core_start_ms=chunk.core_start_ms,
                                                   core_end_ms=chunk.core_end_ms, status="failed", issue_code="media_execution_unknown"))
                 failed.append(chunk.id)

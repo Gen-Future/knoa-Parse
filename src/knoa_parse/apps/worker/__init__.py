@@ -95,7 +95,8 @@ def _stop(process):
     if process.poll() is None:
         try:
             if os.name == "nt":
-                # Native extraction forbids spawning descendants through the audit guard.
+                # Native extraction only permits the audited media binaries;
+                # arbitrary descendants remain blocked by the audit guard.
                 process.kill()
             else:
                 os.killpg(process.pid, signal.SIGKILL)
