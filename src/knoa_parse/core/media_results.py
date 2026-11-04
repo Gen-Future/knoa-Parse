@@ -8,8 +8,8 @@ from .models import Model
 
 class MediaChunkOutcome(Model):
     chunk_id: str = Field(min_length=1, max_length=200)
-    core_start_ms: int = Field(ge=0)
-    core_end_ms: int = Field(gt=0)
+    core_start_ms: int
+    core_end_ms: int
     status: Literal["completed", "failed"]
     issue_code: str | None = Field(default=None, min_length=1)
 
@@ -25,8 +25,8 @@ class MediaChunkOutcome(Model):
 
 
 class MediaCoverage(Model):
-    requested_start_ms: int = Field(ge=0)
-    requested_end_ms: int = Field(gt=0)
+    requested_start_ms: int
+    requested_end_ms: int
     covered_ms: int = Field(ge=0)
     missing_ranges: list[list[int]] = Field(default_factory=list, max_length=10000)
     status: Literal["completed", "partial", "failed"]

@@ -120,6 +120,20 @@ class AsrHttpTests(unittest.TestCase):
         self.assertEqual(caught.exception.code, "provider_request_limit")
         self.assertEqual(_AsrServer.calls, [])
 
+    def test_core_audio_artifact_and_header_fields_are_strict(self):
+        bad_artifact = self.request.segment.artifact.model_copy(update={"sha256": "b" * 64})
+        with self.assertRaises(ValueError):
+            PreparedAudioSegment(source_id=self.request.segment.source_id, source_sha256=self.request.segment.source_sha256,
+                                 source_artifact_id=self.request.segment.source_artifact_id,
+                                 stream_index=self.request.segment.stream_index, start_ms=self.request.segment.start_ms,
+                                 end_ms=self.request.segment.end_ms, artifact=bad_artifact,
+                                 content=self.audio)
+        with self.assertRaises(ValueError):
+            AsrRequest(segment=self.request.segment, language=self.request.language,
+                       word_timestamps=self.request.word_timestamps, diarization=self.request.diarization,
+                       timeout_seconds=self.request.timeout_seconds, trace_id=self.request.trace_id,
+                       idempotency_key="bad\r\nvalue")
+
     def test_invalid_segments_words_usage_and_offsets_are_rejected(self):
         cases = [
             {"segments": [{"start_ms": 0, "end_ms": 1, "text": " "}], "usage": {}},

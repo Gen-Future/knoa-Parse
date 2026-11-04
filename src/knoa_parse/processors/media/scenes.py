@@ -76,13 +76,17 @@ def detect_scene_candidates(source_id: str, stream_index: int, timeline: TimeRan
                                 detector=detector)
 
 
-def associate_scene_evidence(scenes: list[Scene], evidence: list[SceneEvidence]) -> list[SceneEvidenceLink]:
+def associate_scene_evidence(scenes: list[Scene], evidence: list[SceneEvidence], *,
+                             source_id: str | None = None) -> list[SceneEvidenceLink]:
     """Link only overlapping source-time intervals; do not infer missing evidence."""
     if len({scene.id for scene in scenes}) != len(scenes) or len({item.id for item in evidence}) != len(evidence):
         raise SceneDetectionError("scene_duplicate_id", "Scene and evidence IDs must be unique", 422)
     links = []
     for scene in scenes:
-        ids = [item.id for item in evidence if max(scene.start_ms, item.start_ms) < min(scene.end_ms, item.end_ms)]
+        ids = [item.id for item in evidence
+               if (source_id is None or item.source_id == source_id)
+               and (item.stream_index is None or item.stream_index == scene.stream_index)
+               and max(scene.start_ms, item.start_ms) < min(scene.end_ms, item.end_ms)]
         links.append(SceneEvidenceLink(scene_id=scene.id, evidence_ids=ids))
     return links
 

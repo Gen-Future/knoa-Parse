@@ -5,7 +5,6 @@ assuming a fixed frame rate.  A concrete FFmpeg/ffprobe runner lives in the
 media processor layer and is injected by an application.
 """
 from typing import Literal, Protocol
-from pathlib import Path
 
 from pydantic import Field, model_validator
 
@@ -16,7 +15,6 @@ class MediaProbeInput(Model):
     source_id: str = Field(min_length=1)
     source_sha256: str = Field(pattern="^[a-f0-9]{64}$")
     size_bytes: int = Field(ge=0)
-    path: Path = Field(exclude=True, repr=False)
 
 
 class MediaRate(Model):

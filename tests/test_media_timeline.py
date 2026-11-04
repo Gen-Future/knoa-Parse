@@ -25,6 +25,16 @@ class MediaTimelineTests(unittest.TestCase):
                          [(0, 3000), (3000, 6000), (6000, 9000), (9000, 10000)])
         self.assertTrue(all(item.request_end_ms - item.request_start_ms <= 4000 for item in chunks))
 
+    def test_audio_chunks_preserve_stream_timeline_origin(self):
+        probe = _probe(duration=2000)
+        probe = probe.model_copy(update={"start_ms": -500, "streams": [
+            probe.streams[0], probe.streams[1].model_copy(update={"start_ms": -500})
+        ]})
+        chunks = plan_audio_chunks("source", probe, 1, max_segment_ms=1000, overlap_ms=100)
+        self.assertEqual(chunks[0].core_start_ms, -500)
+        self.assertEqual(chunks[-1].core_end_ms, 1500)
+        self.assertEqual(chunks[0].timeline_origin_ms, -500)
+
     def test_no_audio_stream_and_missing_duration_are_explicit_failures(self):
         with self.assertRaises(MediaTimelineError) as caught:
             plan_audio_chunks("source", _probe(audio=False), 1, max_segment_ms=1000)

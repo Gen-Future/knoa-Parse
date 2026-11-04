@@ -9,10 +9,11 @@ from .models import Model
 class AudioChunk(Model):
     id: str = Field(min_length=1, max_length=200)
     stream_index: int = Field(ge=0)
-    request_start_ms: int = Field(ge=0)
-    request_end_ms: int = Field(gt=0)
-    core_start_ms: int = Field(ge=0)
-    core_end_ms: int = Field(gt=0)
+    request_start_ms: int
+    request_end_ms: int
+    core_start_ms: int
+    core_end_ms: int
+    timeline_origin_ms: int = 0
 
     @model_validator(mode="after")
     def valid_ranges(self):

@@ -8,6 +8,7 @@ from pathlib import Path
 from knoa_parse.core.errors import ParseError
 from knoa_parse.core.media import MediaProbeInput
 from knoa_parse.core.scenes import Scene, SceneCoverage, SceneDetectionResult, TimeRange
+from .source import StagedMedia
 
 
 class PySceneDetectError(ParseError):
@@ -43,13 +44,14 @@ class PySceneDetectAdapter:
     def __init__(self, config: PySceneDetectConfig | None = None):
         self.config = config or PySceneDetectConfig()
 
-    def detect(self, source: MediaProbeInput, *, duration_ms: int, stream_index: int = 0) -> SceneDetectionResult:
+    def detect(self, source: StagedMedia, *, duration_ms: int, stream_index: int = 0,
+               timeline_start_ms: int = 0) -> SceneDetectionResult:
         if type(duration_ms) is not int or duration_ms <= 0 or type(stream_index) is not int or stream_index < 0:
             raise PySceneDetectError("scene_invalid_request", "A finite video duration and stream are required", 422)
         path = source.path
         if not isinstance(path, Path) or not path.is_file() or path.is_symlink():
             raise PySceneDetectError("scene_source_unavailable", "Staged video source is unavailable", 404)
-        before = self._digest(path, source)
+        before = self._digest(path, source.identity)
         try:
             module = importlib.import_module("scenedetect")
             detector_type = module.AdaptiveDetector if self.config.detector == "adaptive" else module.ContentDetector
@@ -67,12 +69,12 @@ class PySceneDetectAdapter:
             raise PySceneDetectError("scene_invalid_configuration", "PySceneDetect rejected the configured detector", 422) from None
         except Exception:
             raise PySceneDetectError("scene_decode_failed", "PySceneDetect could not decode the video", 422) from None
-        after = self._digest(path, source)
+        after = self._digest(path, source.identity)
         if before != after:
             raise PySceneDetectError("media_source_changed", "Video source changed during scene detection", 409)
         if not isinstance(scenes, list) or len(scenes) > self.config.max_scenes:
             raise PySceneDetectError("scene_result_limit", "PySceneDetect returned too many scenes", 413)
-        requested = TimeRange(start_ms=0, end_ms=duration_ms)
+        requested = TimeRange(start_ms=timeline_start_ms, end_ms=timeline_start_ms + duration_ms)
         result_scenes = []
         total_frames = 0
         for number, pair in enumerate(scenes, start=1):
@@ -80,15 +82,16 @@ class PySceneDetectAdapter:
                 raise PySceneDetectError("scene_invalid_response", "PySceneDetect returned invalid scene data", 422)
             start_time, end_time = pair
             try:
-                start_ms = round(self._seconds(start_time) * 1000)
-                end_ms = round(self._seconds(end_time) * 1000)
+                start_ms = timeline_start_ms + round(self._seconds(start_time) * 1000)
+                end_ms = timeline_start_ms + round(self._seconds(end_time) * 1000)
                 start_frame = self._frame_num(start_time)
                 end_frame = self._frame_num(end_time)
             except (AttributeError, TypeError, ValueError, OverflowError):
                 raise PySceneDetectError("scene_invalid_response", "PySceneDetect returned invalid timestamps", 422) from None
-            if start_ms < 0 or end_ms <= start_ms or start_ms > duration_ms or end_ms > duration_ms + 100:
+            if start_ms < timeline_start_ms or end_ms <= start_ms or start_ms > requested.end_ms \
+                    or end_ms > requested.end_ms + 100:
                 raise PySceneDetectError("scene_invalid_response", "PySceneDetect timestamp is outside the source", 422)
-            end_ms = min(duration_ms, end_ms)
+            end_ms = min(requested.end_ms, end_ms)
             if start_frame < 0 or end_frame < start_frame:
                 raise PySceneDetectError("scene_invalid_response", "PySceneDetect frame range is invalid", 422)
             total_frames += max(0, end_frame - start_frame)
@@ -98,12 +101,14 @@ class PySceneDetectAdapter:
                                        sampled_ms=end_ms - start_ms))
         if not result_scenes:
             raise PySceneDetectError("scene_empty_result", "PySceneDetect produced no scene timeline", 422)
+        sampled_ranges = [TimeRange(start_ms=scene.start_ms, end_ms=scene.end_ms) for scene in result_scenes]
+        covered_ms = _union_duration([(item.start_ms, item.end_ms) for item in sampled_ranges])
         return SceneDetectionResult(source_id=source.source_id, stream_index=stream_index,
                                     scenes=result_scenes,
                                     coverage=SceneCoverage(requested=requested,
-                                                           sampled_ranges=[requested],
+                                                           sampled_ranges=sampled_ranges,
                                                            sample_count=total_frames,
-                                                           covered_ms=duration_ms),
+                                                           covered_ms=covered_ms),
                                     detector=f"pyscenedetect-{self.config.detector}-{getattr(module, '__version__', '0.7')}")
 
     @staticmethod
@@ -138,3 +143,18 @@ class PySceneDetectAdapter:
         if value is not None and not callable(value):
             return int(value)
         return int(timecode.get_frames())
+
+
+def _union_duration(ranges: list[tuple[int, int]]) -> int:
+    if not ranges:
+        return 0
+    ordered = sorted(ranges)
+    start, end = ordered[0]
+    total = 0
+    for next_start, next_end in ordered[1:]:
+        if next_start > end:
+            total += end - start
+            start, end = next_start, next_end
+        else:
+            end = max(end, next_end)
+    return total + end - start

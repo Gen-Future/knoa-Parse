@@ -12,7 +12,7 @@ class MediaTimelineError(ParseError):
 
 def plan_audio_chunks(source_id: str, probe: MediaProbe, stream_index: int, *,
                       max_segment_ms: int, overlap_ms: int = 0) -> list[AudioChunk]:
-    if not source_id or type(stream_index) is not int or stream_index < 0:
+    if source_id != probe.source_id or type(stream_index) is not int or stream_index < 0:
         raise MediaTimelineError("media_invalid_request", "Invalid audio stream request", 422)
     if type(max_segment_ms) is not int or not 1 <= max_segment_ms <= 24 * 60 * 60 * 1000:
         raise MediaTimelineError("media_invalid_request", "Invalid audio segment limit", 422)
@@ -26,16 +26,19 @@ def plan_audio_chunks(source_id: str, probe: MediaProbe, stream_index: int, *,
     # Keep both the previous and next boundary context while staying within
     # the provider's maximum request duration.
     step = max_segment_ms - 2 * overlap_ms
+    timeline_origin = stream.start_ms if stream.start_ms is not None else (probe.start_ms or 0)
+    timeline_end = timeline_origin + probe.duration_ms
     chunks = []
-    core_start = 0
+    core_start = timeline_origin
     ordinal = 0
-    while core_start < probe.duration_ms:
-        core_end = min(probe.duration_ms, core_start + step)
-        request_start = max(0, core_start - overlap_ms)
-        request_end = min(probe.duration_ms, core_end + overlap_ms)
+    while core_start < timeline_end:
+        core_end = min(timeline_end, core_start + step)
+        request_start = max(timeline_origin, core_start - overlap_ms)
+        request_end = min(timeline_end, core_end + overlap_ms)
         chunks.append(AudioChunk(id=f"audio-{stream_index}-{ordinal}", stream_index=stream_index,
                                  request_start_ms=request_start, request_end_ms=request_end,
-                                 core_start_ms=core_start, core_end_ms=core_end))
+                                 core_start_ms=core_start, core_end_ms=core_end,
+                                 timeline_origin_ms=timeline_origin))
         core_start = core_end
         ordinal += 1
     return chunks

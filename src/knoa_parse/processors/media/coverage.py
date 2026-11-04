@@ -32,6 +32,9 @@ def summarize_execution(target: str, requested_start_ms: int, requested_end_ms: 
     outcome_list = list(outcomes)
     if len({outcome.chunk_id for outcome in outcome_list}) != len(outcome_list):
         raise MediaCoverageError("media_duplicate_chunk", "Media chunk outcomes must be unique", 422)
+    if any(outcome.core_start_ms < requested_start_ms or outcome.core_end_ms > requested_end_ms
+           for outcome in outcome_list):
+        raise MediaCoverageError("media_range_conflict", "Media chunk falls outside the requested range", 422)
     for left, right in zip(sorted(outcome_list, key=lambda item: item.core_start_ms),
                            sorted(outcome_list, key=lambda item: item.core_start_ms)[1:]):
         if left.core_end_ms > right.core_start_ms:

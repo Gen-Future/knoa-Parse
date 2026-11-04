@@ -8,6 +8,7 @@ from unittest.mock import patch
 
 from knoa_parse.core.media import MediaProbeInput
 from knoa_parse.processors.media.pyscenedetect import PySceneDetectAdapter, PySceneDetectConfig, PySceneDetectError
+from knoa_parse.processors.media.source import StagedMedia
 
 
 class _Timecode:
@@ -28,8 +29,9 @@ class PySceneDetectAdapterTests(unittest.TestCase):
         self.path = Path(self.temp.name) / "video.mp4"
         self.data = b"synthetic video source"
         self.path.write_bytes(self.data)
-        self.source = MediaProbeInput(source_id="video", source_sha256=hashlib.sha256(self.data).hexdigest(),
-                                      size_bytes=len(self.data), path=self.path)
+        identity = MediaProbeInput(source_id="video", source_sha256=hashlib.sha256(self.data).hexdigest(),
+                                   size_bytes=len(self.data))
+        self.source = StagedMedia(identity, self.path)
 
     def tearDown(self):
         self.temp.cleanup()
@@ -82,7 +84,7 @@ class PySceneDetectAdapterTests(unittest.TestCase):
             with self.assertRaises(PySceneDetectError) as caught:
                 PySceneDetectAdapter().detect(self.source, duration_ms=1000)
         self.assertEqual(caught.exception.code, "scene_invalid_response")
-        wrong = self.source.model_copy(update={"source_sha256": "0" * 64})
+        wrong = StagedMedia(self.source.identity.model_copy(update={"source_sha256": "0" * 64}), self.path)
         with self.assertRaises(PySceneDetectError) as caught:
             PySceneDetectAdapter().detect(wrong, duration_ms=1000)
         self.assertEqual(caught.exception.code, "media_source_changed")

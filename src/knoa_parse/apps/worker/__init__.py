@@ -16,8 +16,13 @@ from knoa_parse.core.artifacts import StagedArtifacts
 
 def deny_network(event, args):
     if event in {"socket.connect", "socket.connect_ex", "socket.sendto", "socket.getaddrinfo",
-                 "socket.gethostbyname", "socket.gethostbyaddr", "subprocess.Popen", "os.system"}:
+                 "socket.gethostbyname", "socket.gethostbyaddr", "os.system"}:
         raise PermissionError("Native extraction cannot use network or launch subprocesses")
+    if event == "subprocess.Popen":
+        executable = args[0] if args else ""
+        name = os.path.basename(str(executable)).lower()
+        if name not in {"ffmpeg", "ffmpeg.exe", "ffprobe", "ffprobe.exe"}:
+            raise PermissionError("Native extraction cannot launch this subprocess")
 
 
 def execute(store: Store, job_id: str, output: Path):

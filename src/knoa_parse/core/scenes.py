@@ -7,8 +7,8 @@ from .models import Model
 
 
 class TimeRange(Model):
-    start_ms: int = Field(ge=0)
-    end_ms: int = Field(gt=0)
+    start_ms: int
+    end_ms: int
 
     @model_validator(mode="after")
     def forward(self):
@@ -19,7 +19,7 @@ class TimeRange(Model):
 
 class SceneSample(Model):
     frame_index: int = Field(ge=0)
-    pts_ms: int = Field(ge=0)
+    pts_ms: int
     duration_ms: int = Field(gt=0)
     change_score: float = Field(ge=0, le=1)
 
@@ -27,8 +27,8 @@ class SceneSample(Model):
 class Scene(Model):
     id: str = Field(min_length=1, max_length=100)
     stream_index: int = Field(ge=0)
-    start_ms: int = Field(ge=0)
-    end_ms: int = Field(gt=0)
+    start_ms: int
+    end_ms: int
     start_frame_index: int = Field(ge=0)
     end_frame_index: int = Field(ge=0)
     sampled_ms: int = Field(ge=0)
@@ -65,9 +65,11 @@ class SceneDetectionResult(Model):
 
 class SceneEvidence(Model):
     id: str = Field(min_length=1, max_length=200)
+    source_id: str = Field(min_length=1)
     kind: Literal["transcript", "subtitle", "audio"]
-    start_ms: int = Field(ge=0)
-    end_ms: int = Field(gt=0)
+    start_ms: int
+    end_ms: int
+    stream_index: int | None = Field(default=None, ge=0)
 
     @model_validator(mode="after")
     def forward(self):

@@ -4,6 +4,7 @@ The provider receives one prepared audio segment and returns timestamps already
 mapped to the original stream timeline.  It never loads a local speech model.
 """
 from typing import Literal, Protocol
+import hashlib
 
 from pydantic import Field, model_validator
 
@@ -15,7 +16,7 @@ class PreparedAudioSegment(Model):
     source_sha256: str = Field(pattern="^[a-f0-9]{64}$")
     source_artifact_id: str = Field(min_length=1)
     stream_index: int = Field(ge=0)
-    start_ms: int = Field(ge=0)
+    start_ms: int
     end_ms: int = Field(gt=0)
     artifact: Artifact
     content: bytes = Field(min_length=1, exclude=True, repr=False)
@@ -24,7 +25,8 @@ class PreparedAudioSegment(Model):
     def valid_range_and_artifact(self):
         if self.end_ms <= self.start_ms:
             raise ValueError("Audio segment must have a forward time range")
-        if self.artifact.role != "derived" or self.artifact.size_bytes != len(self.content):
+        if (self.artifact.role != "derived" or self.artifact.size_bytes != len(self.content)
+                or self.artifact.sha256 != hashlib.sha256(self.content).hexdigest()):
             raise ValueError("Audio segment artifact does not match its bytes")
         return self
 
@@ -38,11 +40,18 @@ class AsrRequest(Model):
     trace_id: str = Field(min_length=1, max_length=200)
     idempotency_key: str = Field(min_length=1, max_length=200)
 
+    @model_validator(mode="after")
+    def safe_wire_fields(self):
+        for value in (self.language, self.trace_id, self.idempotency_key):
+            if value is not None and any(ord(char) < 32 for char in value):
+                raise ValueError("ASR wire fields cannot contain control characters")
+        return self
+
 
 class TranscriptWord(Model):
     text: str = Field(min_length=1, max_length=10000)
-    start_ms: int = Field(ge=0)
-    end_ms: int = Field(gt=0)
+    start_ms: int
+    end_ms: int
     speaker: str | None = Field(default=None, max_length=200)
 
     @model_validator(mode="after")
@@ -54,8 +63,8 @@ class TranscriptWord(Model):
 
 class TranscriptSegment(Model):
     text: str = Field(min_length=1, max_length=100000)
-    start_ms: int = Field(ge=0)
-    end_ms: int = Field(gt=0)
+    start_ms: int
+    end_ms: int
     words: list[TranscriptWord] = Field(default_factory=list, max_length=10000)
     speaker: str | None = Field(default=None, max_length=200)
 
@@ -78,8 +87,8 @@ class AsrResponse(Model):
     model: str = Field(min_length=1, max_length=200)
     source_id: str = Field(min_length=1)
     stream_index: int = Field(ge=0)
-    segment_start_ms: int = Field(ge=0)
-    segment_end_ms: int = Field(gt=0)
+    segment_start_ms: int
+    segment_end_ms: int
     language: str | None = Field(default=None, max_length=32)
     segments: list[TranscriptSegment] = Field(max_length=10000)
     usage: AsrUsage

@@ -66,9 +66,9 @@ class SceneDetectionTests(unittest.TestCase):
         result = detect_scene_candidates("source-video", 0, self.timeline(), self.samples(),
                                          config=SceneDetectorConfig(threshold=0.5, min_scene_ms=250))
         evidence = [
-            SceneEvidence(id="t1", kind="transcript", start_ms=1100, end_ms=1200),
-            SceneEvidence(id="s1", kind="subtitle", start_ms=3500, end_ms=3600),
-            SceneEvidence(id="gap", kind="audio", start_ms=1200, end_ms=1500),
+            SceneEvidence(id="t1", source_id="source-video", kind="transcript", start_ms=1100, end_ms=1200),
+            SceneEvidence(id="s1", source_id="source-video", kind="subtitle", start_ms=3500, end_ms=3600),
+            SceneEvidence(id="gap", source_id="source-video", kind="audio", start_ms=1200, end_ms=1500),
         ]
         links = associate_scene_evidence(result.scenes, evidence)
         self.assertEqual(links[0].evidence_ids, [])
@@ -77,7 +77,7 @@ class SceneDetectionTests(unittest.TestCase):
 
     def test_duplicate_scene_or_evidence_ids_are_rejected(self):
         result = detect_scene_candidates("source-video", 0, self.timeline(), self.samples())
-        duplicate = [SceneEvidence(id="same", kind="audio", start_ms=0, end_ms=1)] * 2
+        duplicate = [SceneEvidence(id="same", source_id="source-video", kind="audio", start_ms=0, end_ms=1)] * 2
         with self.assertRaises(SceneDetectionError) as caught:
             associate_scene_evidence(result.scenes, duplicate)
         self.assertEqual(caught.exception.code, "scene_duplicate_id")

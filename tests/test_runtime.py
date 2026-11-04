@@ -15,7 +15,7 @@ from unittest.mock import patch
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
-from knoa_parse.apps.worker import run_once
+from knoa_parse.apps.worker import deny_network, run_once
 from knoa_parse.core.errors import ParseError
 from knoa_parse.core.models import ParseResult
 from knoa_parse.core.settings import Settings
@@ -30,6 +30,12 @@ class RuntimeTests(unittest.TestCase):
 
     def source(self, raw=b"hello", filename="test.txt"):
         return self.store.ingest(io.BytesIO(raw), filename)
+
+    def test_worker_subprocess_guard_allows_only_media_tools(self):
+        deny_network("subprocess.Popen", ("ffmpeg.exe", [], None, None))
+        deny_network("subprocess.Popen", ("ffprobe", [], None, None))
+        with self.assertRaises(PermissionError):
+            deny_network("subprocess.Popen", ("python.exe", [], None, None))
 
     def test_unicode_bom_crlf_offsets_survive_worker_and_persistence(self):
         text = "\ufeff中文\r\n😀\nend"

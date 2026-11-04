@@ -2,7 +2,6 @@
 import hashlib
 import json
 import math
-import subprocess
 from dataclasses import dataclass, field
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 from pathlib import Path
@@ -17,6 +16,8 @@ from knoa_parse.core.media import (
     MediaStream,
     MediaTimeBase,
 )
+from .source import StagedMedia
+from .process import BoundedProcessError, run_bounded
 
 
 class MediaProbeError(ParseError):
@@ -121,16 +122,16 @@ class FfprobeMediaProber:
     def __init__(self, config: FfprobeConfig | None = None):
         self.config = config or FfprobeConfig()
 
-    def probe(self, source: MediaProbeInput, *, include_frames: bool = False,
+    def probe(self, source: StagedMedia, *, include_frames: bool = False,
               stream_index: int | None = None) -> MediaProbe:
-        if include_frames and stream_index is not None and (type(stream_index) is not int or stream_index < 0):
+        if include_frames and (stream_index is None or type(stream_index) is not int or stream_index < 0):
             raise MediaProbeError("media_invalid_request", "Invalid media stream selector", 422)
         path = source.path
         # The path is excluded from serialized source identity and must be
         # attached by a trusted staging boundary before this process call.
         if not isinstance(path, Path) or not path.is_file() or path.is_symlink():
             raise MediaProbeError("media_source_unavailable", "Staged media source is unavailable", 404)
-        before = self._digest(path, source)
+        before = self._digest(path, source.identity)
         command = [self.config.executable, *self.config.executable_args,
                    "-v", "error", "-print_format", "json", "-show_format", "-show_streams"]
         if include_frames:
@@ -140,27 +141,25 @@ class FfprobeMediaProber:
                             "frame=stream_index,best_effort_timestamp,pkt_duration,key_frame"])
         command.append(str(path.resolve()))
         try:
-            completed = subprocess.run(
-                command, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
-                shell=False, timeout=min(self.config.timeout_seconds, 300), check=False,
-            )
-        except FileNotFoundError:
-            raise MediaProbeError("media_tool_missing", "ffprobe is not installed or not on PATH", 503) from None
-        except subprocess.TimeoutExpired:
-            raise MediaProbeError("media_tool_timeout", "ffprobe exceeded the configured time limit", 504) from None
-        except OSError:
+            completed = run_bounded(command, timeout_seconds=min(self.config.timeout_seconds, 300),
+                                    max_output_bytes=self.config.max_output_bytes)
+        except BoundedProcessError as error:
+            if error.kind == "missing":
+                raise MediaProbeError("media_tool_missing", "ffprobe is not installed or not on PATH", 503) from None
+            if error.kind == "timeout":
+                raise MediaProbeError("media_tool_timeout", "ffprobe exceeded the configured time limit", 504) from None
+            if error.kind == "limit":
+                raise MediaProbeError("media_probe_limit", "ffprobe output exceeds the configured limit", 413) from None
             raise MediaProbeError("media_tool_unavailable", "ffprobe could not be started", 503) from None
-        if len(completed.stdout) > self.config.max_output_bytes:
-            raise MediaProbeError("media_probe_limit", "ffprobe output exceeds the configured limit", 413)
         if completed.returncode != 0:
             raise MediaProbeError("media_probe_failed", "ffprobe rejected the media source", 422)
         try:
             payload = json.loads(completed.stdout.decode("utf-8"), object_pairs_hook=_unique_object,
                                  parse_constant=_reject_constant)
-            result = self._parse_payload(payload, source, include_frames=include_frames)
+            result = self._parse_payload(payload, source.identity, include_frames=include_frames)
         except (UnicodeDecodeError, ValueError, TypeError, KeyError, OverflowError, RecursionError):
             raise MediaProbeError("media_probe_invalid_response", "ffprobe returned invalid media metadata", 422) from None
-        after = self._digest(path, source)
+        after = self._digest(path, source.identity)
         if before != after:
             raise MediaProbeError("media_source_changed", "Media source changed during probing", 409)
         return result

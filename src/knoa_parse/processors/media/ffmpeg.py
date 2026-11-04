@@ -1,7 +1,7 @@
 """Controlled FFmpeg audio extraction for planned ASR chunks."""
 import hashlib
 import math
-import subprocess
+import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Protocol
@@ -14,6 +14,8 @@ from knoa_parse.core.models import Artifact, Model
 from knoa_parse.core.timeline import AudioChunk
 
 from .coverage import require_audio_stream, summarize_execution
+from .source import StagedMedia
+from .process import BoundedProcessError, run_bounded
 from .timeline import MediaTimelineError, plan_audio_chunks
 
 
@@ -45,7 +47,7 @@ class FfmpegConfig:
 
 
 class AudioExtractor(Protocol):
-    def extract(self, source: MediaProbeInput, chunk: AudioChunk) -> PreparedAudioSegment: ...
+    def extract(self, source: StagedMedia, chunk: AudioChunk, *, timeout_seconds: float | None = None) -> PreparedAudioSegment: ...
 
 
 class FfmpegAudioExtractor:
@@ -54,31 +56,32 @@ class FfmpegAudioExtractor:
     def __init__(self, config: FfmpegConfig | None = None):
         self.config = config or FfmpegConfig()
 
-    def extract(self, source: MediaProbeInput, chunk: AudioChunk) -> PreparedAudioSegment:
+    def extract(self, source: StagedMedia, chunk: AudioChunk, *, timeout_seconds: float | None = None) -> PreparedAudioSegment:
         path = source.path
         if not isinstance(path, Path) or not path.is_file() or path.is_symlink():
             raise FfmpegError("media_source_unavailable", "Staged media source is unavailable", 404)
-        before = self._digest(path, source)
+        before = self._digest(path, source.identity)
+        input_start_ms = chunk.request_start_ms - chunk.timeline_origin_ms
         duration_seconds = (chunk.request_end_ms - chunk.request_start_ms) / 1000
         command = [self.config.executable, "-nostdin", "-v", "error", "-i", str(path.resolve()),
-                   "-ss", f"{chunk.request_start_ms / 1000:.3f}", "-t", f"{duration_seconds:.3f}",
+                   "-ss", f"{input_start_ms / 1000:.3f}", "-t", f"{duration_seconds:.3f}",
                    "-map", f"0:{chunk.stream_index}", "-vn", "-acodec", "pcm_s16le",
                    "-ar", str(self.config.sample_rate), "-ac", str(self.config.channels), "-f", "wav", "pipe:1"]
         try:
-            completed = subprocess.run(command, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
-                                       stderr=subprocess.DEVNULL, shell=False, timeout=self.config.timeout_seconds,
-                                       check=False)
-        except FileNotFoundError:
-            raise FfmpegError("media_tool_missing", "FFmpeg is not installed or not on PATH", 503) from None
-        except subprocess.TimeoutExpired:
-            raise FfmpegError("media_tool_timeout", "FFmpeg exceeded the configured time limit", 504) from None
-        except OSError:
+            completed = run_bounded(command, timeout_seconds=min(self.config.timeout_seconds,
+                                                                 timeout_seconds or self.config.timeout_seconds),
+                                    max_output_bytes=self.config.max_output_bytes)
+        except BoundedProcessError as error:
+            if error.kind == "missing":
+                raise FfmpegError("media_tool_missing", "FFmpeg is not installed or not on PATH", 503) from None
+            if error.kind == "timeout":
+                raise FfmpegError("media_tool_timeout", "FFmpeg exceeded the configured time limit", 504) from None
+            if error.kind == "limit":
+                raise FfmpegError("media_output_limit", "FFmpeg audio output exceeds the configured limit", 413) from None
             raise FfmpegError("media_tool_unavailable", "FFmpeg could not be started", 503) from None
-        if len(completed.stdout) > self.config.max_output_bytes:
-            raise FfmpegError("media_output_limit", "FFmpeg audio output exceeds the configured limit", 413)
         if completed.returncode != 0 or not completed.stdout:
             raise FfmpegError("media_extract_failed", "FFmpeg could not extract the requested audio chunk", 422)
-        after = self._digest(path, source)
+        after = self._digest(path, source.identity)
         if before != after:
             raise FfmpegError("media_source_changed", "Media source changed during audio extraction", 409)
         digest = hashlib.sha256(completed.stdout).hexdigest()
@@ -123,10 +126,11 @@ class MediaTranscriptionRunner:
         self.extractor = extractor
         self.provider = provider
 
-    def transcribe(self, source: MediaProbeInput, probe, *, max_segment_ms: int,
+    def transcribe(self, source: StagedMedia, probe, *, max_segment_ms: int,
                    overlap_ms: int = 0, language: str | None = None,
                    word_timestamps: bool = True, diarization: bool = False,
-                   timeout_seconds: float = 300.0) -> MediaTranscriptionResult:
+                   timeout_seconds: float = 300.0,
+                   cancelled=lambda: False) -> MediaTranscriptionResult:
         stream_index = require_audio_stream(probe)
         try:
             chunks = plan_audio_chunks(source.source_id, probe, stream_index,
@@ -137,14 +141,34 @@ class MediaTranscriptionRunner:
         usages = []
         responses = []
         failed = []
+        seen_segments: set[tuple[str, str | None, int]] = set()
+        deadline = time.monotonic() + timeout_seconds
         for chunk in chunks:
+            if cancelled() or time.monotonic() >= deadline:
+                issue = "media_cancelled" if cancelled() else "media_timeout"
+                outcomes.append(MediaChunkOutcome(chunk_id=chunk.id, core_start_ms=chunk.core_start_ms,
+                                                  core_end_ms=chunk.core_end_ms, status="failed", issue_code=issue))
+                failed.append(chunk.id)
+                continue
             try:
-                segment = self.extractor.extract(source, chunk)
+                remaining = max(0.1, deadline - time.monotonic())
+                segment = self.extractor.extract(source, chunk, timeout_seconds=remaining)
                 request = AsrRequest(segment=segment, language=language, word_timestamps=word_timestamps,
-                                     diarization=diarization, timeout_seconds=timeout_seconds,
+                                     diarization=diarization, timeout_seconds=min(remaining, 300),
                                      trace_id=f"{source.source_id}:{chunk.id}", idempotency_key=chunk.id)
                 response = self.provider.transcribe(request)
-                responses.append(response)
+                if cancelled():
+                    raise ProviderError("provider_cancelled_after_send", "Transcription cancelled after sending", retryable=False)
+                filtered = []
+                for item in response.segments:
+                    if item.end_ms <= chunk.core_start_ms or item.start_ms >= chunk.core_end_ms:
+                        continue
+                    key = (item.text.strip().casefold(), item.speaker, item.start_ms)
+                    if key in seen_segments:
+                        continue
+                    seen_segments.add(key)
+                    filtered.append(item)
+                responses.append(response.model_copy(update={"segments": filtered}))
                 outcomes.append(MediaChunkOutcome(chunk_id=chunk.id, core_start_ms=chunk.core_start_ms,
                                                   core_end_ms=chunk.core_end_ms, status="completed"))
                 usages.append(response.usage)
@@ -162,6 +186,9 @@ class MediaTranscriptionRunner:
                 outcomes.append(MediaChunkOutcome(chunk_id=chunk.id, core_start_ms=chunk.core_start_ms,
                                                   core_end_ms=chunk.core_end_ms, status="failed", issue_code="media_execution_unknown"))
                 failed.append(chunk.id)
-        summary = summarize_execution("transcribe", 0, probe.duration_ms, outcomes, usages)
+        stream = next(item for item in probe.streams if item.index == stream_index)
+        timeline_start = stream.start_ms if stream.start_ms is not None else (probe.start_ms or 0)
+        summary = summarize_execution("transcribe", timeline_start, timeline_start + probe.duration_ms,
+                                      outcomes, usages)
         return MediaTranscriptionResult(summary=summary, chunks=chunks, responses=responses,
                                         failed_chunk_ids=failed)

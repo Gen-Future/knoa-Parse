@@ -19,6 +19,7 @@ from knoa_parse.processors.media.ffprobe import FfprobeConfig, FfprobeMediaProbe
 from knoa_parse.processors.media.ffmpeg import FfmpegAudioExtractor, FfmpegConfig
 from knoa_parse.processors.media.pyscenedetect import PySceneDetectAdapter, PySceneDetectConfig
 from knoa_parse.processors.media.timeline import plan_audio_chunks
+from knoa_parse.processors.media.source import StagedMedia
 
 
 def _ffprobe_path():
@@ -44,8 +45,8 @@ class OptionalVideoToolchainTests(unittest.TestCase):
                 writer.write(numpy.zeros((64, 64, 3), dtype="uint8"))
             writer.release()
             data = path.read_bytes()
-            source = MediaProbeInput(source_id="synthetic-video", source_sha256=hashlib.sha256(data).hexdigest(),
-                                     size_bytes=len(data), path=path)
+            source = StagedMedia(MediaProbeInput(source_id="synthetic-video", source_sha256=hashlib.sha256(data).hexdigest(),
+                                                 size_bytes=len(data)), path)
             probe = FfprobeMediaProber(FfprobeConfig(executable=_ffprobe_path())).probe(
                 source, include_frames=True, stream_index=0)
             self.assertEqual(probe.duration_ms, 2000)
@@ -68,8 +69,8 @@ class OptionalVideoToolchainTests(unittest.TestCase):
                                      timeout=30, check=False)
             self.assertEqual(created.returncode, 0, created.stderr.decode(errors="replace"))
             data = path.read_bytes()
-            source = MediaProbeInput(source_id="synthetic-av", source_sha256=hashlib.sha256(data).hexdigest(),
-                                     size_bytes=len(data), path=path)
+            source = StagedMedia(MediaProbeInput(source_id="synthetic-av", source_sha256=hashlib.sha256(data).hexdigest(),
+                                                 size_bytes=len(data)), path)
             probe = FfprobeMediaProber(FfprobeConfig(executable=_ffprobe_path())).probe(source)
             audio_stream = next(stream for stream in probe.streams if stream.kind == "audio")
             chunk = plan_audio_chunks(source.source_id, probe, audio_stream.index,
