@@ -1,6 +1,6 @@
 # M4 开发完成审计
 
-日期：2026-11-04；审计对象：M4 音频与视频代码阶段。这个审计把实现证据与生产开放闸门分开，不能用合成服务结果代替真实 ASR 效果。
+日期：2026-11-04，最终复核：2026-11-05；审计对象：M4 音频与视频代码阶段。这个审计把实现证据与生产开放闸门分开，不能用合成服务结果代替真实 ASR 效果。
 
 ## 已完成的代码范围
 
@@ -14,10 +14,10 @@
 
 | 检查 | 结果 |
 | --- | --- |
-| `scripts/check.py` | 通过，283 个仓库文件 |
-| `uv lock --check` | 通过，video extra 已锁定 |
+| `scripts/check.py` | 通过，299 个仓库文件 |
+| `uv lock --check` | 锁定环境此前通过，video extra 已锁定；本机未安装 `uv`，本轮无法重跑 |
 | `scripts/audit_dependencies.py --documents --api --video` | 通过，69 条 lock 记录，无禁止依赖 |
-| `python -m unittest discover -s tests -v` | 214 项通过，2 项 optional toolchain 在未设置本机二进制环境变量时跳过 |
+| `python -m unittest discover -s tests -v` | 224 项通过，2 项 optional toolchain 在当前受限 Windows 路径环境中安全跳过 |
 | 设置 FFmpeg/ffprobe 路径后的 optional toolchain | 2 项通过：真实音视频生成、ffprobe PTS、PySceneDetect 场景、FFmpeg WAV 裁剪 |
 | Azure Speech 适配器专项 | 3 项通过；使用本地合成 HTTP，无真实账户调用 |
 
