@@ -23,11 +23,23 @@ from knoa_parse.processors.media.source import StagedMedia
 
 
 def _ffprobe_path():
-    return os.environ.get("KNOA_FFPROBE") or shutil.which("ffprobe")
+    candidate = os.environ.get("KNOA_FFPROBE") or shutil.which("ffprobe")
+    if not candidate:
+        return None
+    try:
+        return candidate if Path(candidate).is_file() else None
+    except OSError:
+        return None
 
 
 def _ffmpeg_path():
-    return os.environ.get("KNOA_FFMPEG") or shutil.which("ffmpeg")
+    candidate = os.environ.get("KNOA_FFMPEG") or shutil.which("ffmpeg")
+    if not candidate:
+        return None
+    try:
+        return candidate if Path(candidate).is_file() else None
+    except OSError:
+        return None
 
 
 @unittest.skipUnless(cv2 is not None and numpy is not None and importlib.util.find_spec("scenedetect")

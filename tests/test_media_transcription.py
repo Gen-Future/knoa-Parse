@@ -121,6 +121,24 @@ class MediaTranscriptionTests(unittest.TestCase):
             self.assertEqual([record.state for record in records], ["succeeded", "unknown", "succeeded"])
             self.assertEqual(len(result.failed_chunk_ids), 1)
 
+    def test_rerun_does_not_resubmit_succeeded_or_unknown_invocations(self):
+        source_bytes = b"source"
+        source = StagedMedia(MediaProbeInput(source_id="source", source_sha256=hashlib.sha256(source_bytes).hexdigest(),
+                                             size_bytes=len(source_bytes)), Path(__file__))
+        with tempfile.TemporaryDirectory() as directory:
+            store = Store(Settings(Path(directory)))
+            coordinator = InvocationCoordinator(store, "run-rerun", "synthetic", "transcribe", "b" * 64)
+            first_provider = _Provider()
+            MediaTranscriptionRunner(_Extractor(), first_provider, coordinator=coordinator,
+                                     publish_response=lambda response, invocation_id: f"artifact-{invocation_id}").transcribe(
+                source, _probe(duration=5000), max_segment_ms=3000, overlap_ms=500)
+            second_provider = _Provider()
+            second = MediaTranscriptionRunner(_Extractor(), second_provider, coordinator=coordinator,
+                                              publish_response=lambda response, invocation_id: f"artifact-{invocation_id}").transcribe(
+                source, _probe(duration=5000), max_segment_ms=3000, overlap_ms=500)
+            self.assertEqual(len(second_provider.calls), 0)
+            self.assertEqual(second.failed_chunk_ids, ["audio-1-0", "audio-1-1", "audio-1-2"])
+
 
 if __name__ == "__main__":
     unittest.main()

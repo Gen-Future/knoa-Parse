@@ -26,6 +26,7 @@ def execute_media_transcription(
     publish_response,
     *,
     provider_name: str,
+    load_response=None,
     config_fingerprint: str,
     max_attempts: int = 2,
     **options,
@@ -35,5 +36,6 @@ def execute_media_transcription(
         max_attempts=max_attempts,
     )
     runner = MediaTranscriptionRunner(coordinator=coordinator, extractor=extractor,
-                                      provider=provider, publish_response=publish_response)
+                                      provider=provider, publish_response=publish_response,
+                                      load_response=load_response)
     return runner.transcribe(staged, probe, **options)

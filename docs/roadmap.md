@@ -50,10 +50,10 @@
 
 ## M4：音频与视频
 
-- [x] M4-A-基础：引擎无关媒体流/时间基/PTS 契约与受控 ffprobe 边界；见 [开发后记录](../testing/records/2026-11-04-m4a-media-probe.md)。未安装或锁定实际二进制，未开放音视频产品能力。
+- [x] M4-A-基础：引擎无关媒体流/时间基/PTS 契约与受控 ffprobe 边界；见 [开发后记录](../testing/records/2026-11-04-m4a-media-probe.md)。该阶段尚未安装实际二进制，后续由 M4-F 验收。
 - [x] M4-B-基础：供应商无关的外部 ASR 单片段契约、时间偏移、词级结果和 HTTPS/JSON transport；见 [开发后记录](../testing/records/2026-11-04-m4b-asr.md)。未接真实服务、未开放转录目标。
-- [x] M4-C-基础：基于实际帧 PTS 的场景候选、抽样覆盖与音频/字幕/转录区间关联；见 [开发后记录](../testing/records/2026-11-04-m4c-scene-timeline.md)。未安装 PySceneDetect，未开放视频理解。
-- [x] M4-D-基础：受服务上限约束的音频重叠分段、core 去重区间和 SRT/WebVTT 时间映射；见 [开发后记录](../testing/records/2026-11-04-m4d-timeline.md)。未执行真实裁剪/字幕容器抽取。
+- [x] M4-C-基础：基于实际帧 PTS 的场景候选、抽样覆盖与音频/字幕/转录区间关联；见 [开发后记录](../testing/records/2026-11-04-m4c-scene-timeline.md)。该阶段只验证注入样本，PySceneDetect 由 M4-F 接入。
+- [x] M4-D-基础：受服务上限约束的音频重叠分段、core 去重区间和 SRT/WebVTT 时间映射；见 [开发后记录](../testing/records/2026-11-04-m4d-timeline.md)。该阶段未执行真实裁剪，后续由 M4-H/K 补齐。
 - [x] M4-E-基础：无音轨前置、chunk 覆盖/缺段和费用 unknown 闸门；见 [开发后记录](../testing/records/2026-11-04-m4e-media-gates.md)。真实工具/服务效果仍未验收。
 - [x] M4-F-本地工具链：锁定 `scenedetect-headless==0.7.2`，并用 Windows FFmpeg/ffprobe 9.0.2 与真实合成 MP4 验收 PTS/场景/覆盖；见 [开发后记录](../testing/records/2026-11-04-m4f-real-video-toolchain.md)。跨平台二进制和外部 ASR 仍待验收。
 - [x] M4-G-ASR 适配器：选择并接入 Azure Speech fast transcription REST 2025-10-15 的 multipart、词级时间、speaker 和偏移映射；见 [开发后记录](../testing/records/2026-11-04-m4g-azure-speech.md)。未真实联调，未开放转录目标。

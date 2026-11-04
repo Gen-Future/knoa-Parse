@@ -125,11 +125,12 @@ class MediaTranscriptionRunner:
 
     def __init__(self, extractor: AudioExtractor, provider: AsrProvider,
                  coordinator: MediaInvocationPort | None = None,
-                 publish_response=None):
+                 publish_response=None, load_response=None):
         self.extractor = extractor
         self.provider = provider
         self.coordinator = coordinator
         self.publish_response = publish_response
+        self.load_response = load_response
 
     def transcribe(self, source: StagedMedia, probe, *, max_segment_ms: int,
                    overlap_ms: int = 0, language: str | None = None,
@@ -156,6 +157,31 @@ class MediaTranscriptionRunner:
             self.coordinator.plan([MediaInvocationUnit(unit_id=chunk.id, request_fingerprint=fingerprint)
                                    for chunk, fingerprint in zip(chunks, fingerprints)])
         for chunk in chunks:
+            if self.coordinator is not None:
+                current = self.coordinator.current(chunk.id)
+                if current.state == "succeeded":
+                    if self.load_response is None or not current.response_artifact_id:
+                        outcomes.append(MediaChunkOutcome(chunk_id=chunk.id, core_start_ms=chunk.core_start_ms,
+                                                          core_end_ms=chunk.core_end_ms, status="failed",
+                                                          issue_code="media_response_unavailable"))
+                        failed.append(chunk.id)
+                        continue
+                    responses.append(self.load_response(current.response_artifact_id))
+                    outcomes.append(MediaChunkOutcome(chunk_id=chunk.id, core_start_ms=chunk.core_start_ms,
+                                                      core_end_ms=chunk.core_end_ms, status="completed"))
+                    continue
+                if current.state in {"unknown", "submitted"}:
+                    outcomes.append(MediaChunkOutcome(chunk_id=chunk.id, core_start_ms=chunk.core_start_ms,
+                                                      core_end_ms=chunk.core_end_ms, status="failed",
+                                                      issue_code="media_manual_review"))
+                    failed.append(chunk.id)
+                    continue
+                if current.state == "cancelled":
+                    outcomes.append(MediaChunkOutcome(chunk_id=chunk.id, core_start_ms=chunk.core_start_ms,
+                                                      core_end_ms=chunk.core_end_ms, status="failed",
+                                                      issue_code="media_cancelled"))
+                    failed.append(chunk.id)
+                    continue
             if cancelled() or time.monotonic() >= deadline:
                 issue = "media_cancelled" if cancelled() else "media_timeout"
                 if self.coordinator is not None and self.coordinator.current(chunk.id).state == "planned":
@@ -174,15 +200,6 @@ class MediaTranscriptionRunner:
                 response = self.provider.transcribe(request)
                 if cancelled():
                     raise ProviderError("provider_cancelled_after_send", "Transcription cancelled after sending", retryable=False)
-                if self.coordinator is not None:
-                    if self.publish_response is None:
-                        raise ParseError("media_response_publisher_required", "A response publisher is required for durable media execution", 500)
-                    artifact_id = self.publish_response(response, submitted.id)
-                    self.coordinator.succeed(
-                        chunk.id, artifact_id,
-                        ProviderUsage(cost_micros=response.usage.cost_micros),
-                        billing_state="known" if response.usage.cost_micros is not None else "unknown",
-                    )
                 filtered = []
                 for item in response.segments:
                     if item.end_ms <= chunk.core_start_ms or item.start_ms >= chunk.core_end_ms:
@@ -192,7 +209,17 @@ class MediaTranscriptionRunner:
                         continue
                     seen_segments.add(key)
                     filtered.append(item)
-                responses.append(response.model_copy(update={"segments": filtered}))
+                filtered_response = response.model_copy(update={"segments": filtered})
+                if self.coordinator is not None:
+                    if self.publish_response is None:
+                        raise ParseError("media_response_publisher_required", "A response publisher is required for durable media execution", 500)
+                    artifact_id = self.publish_response(filtered_response, submitted.id)
+                    self.coordinator.succeed(
+                        chunk.id, artifact_id,
+                        ProviderUsage(cost_micros=response.usage.cost_micros),
+                        billing_state="known" if response.usage.cost_micros is not None else "unknown",
+                    )
+                responses.append(filtered_response)
                 outcomes.append(MediaChunkOutcome(chunk_id=chunk.id, core_start_ms=chunk.core_start_ms,
                                                   core_end_ms=chunk.core_end_ms, status="completed"))
                 usages.append(response.usage)

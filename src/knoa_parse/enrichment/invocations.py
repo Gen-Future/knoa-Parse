@@ -49,7 +49,22 @@ class InvocationCoordinator:
             config_fingerprint=self.config_fingerprint,
             request_fingerprint=unit.request_fingerprint,
         ) for unit in units]
-        return self.store.insert_invocations(records)
+        missing = []
+        existing = []
+        for record in records:
+            try:
+                previous = self.store.invocation(record.id)
+            except ParseError as error:
+                if error.code != "invocation_not_found":
+                    raise
+                missing.append(record)
+            else:
+                if previous.request_fingerprint != record.request_fingerprint:
+                    raise ParseError("invocation_conflict", "Invocation request fingerprint changed", 409)
+                existing.append(previous)
+        inserted = self.store.insert_invocations(missing) if missing else []
+        by_unit = {record.unit_id: record for record in [*existing, *inserted]}
+        return [by_unit[unit.unit_id] for unit in units]
 
     def current(self, unit_id: str) -> InvocationRecord:
         return self.store.invocation(self._id(unit_id))
