@@ -35,6 +35,7 @@
 当前工程：[M3-H 开发前需求](changes/2026-11-04-m3h-provider-execution-before.md)、[开发后不确定项](changes/2026-11-04-m3h-provider-execution-after.md)、[验证记录](records/2026-11-04-m3h-provider-execution.md)。
 
 当前工程：[工作台 V2 开发前需求](changes/2026-11-05-console-v2-before.md)、[开发后不确定项](changes/2026-11-05-console-v2-after.md)。
+执行摘要：[工作台 V2 执行记录](records/2026-11-05-console-v2.md)。
 
 - 实现前创建 `testing/changes/YYYY-MM-DD-主题-before.md`，使用 [开发前模板](templates/before-development.md)。需求、样本与独立预期先于实现；任务开始时尚有疑问，先写待决事项和禁止做出的假设。
 - 工作结束创建同名前缀的 `-after.md`，使用 [开发后模板](templates/after-development.md)，单独列出不确定部分，链接原需求与自动验证证据。新增风险不能只埋在交付对话里。
