@@ -1,4 +1,4 @@
-import {states, active, attention, escapeHtml as esc, extension, bytes, dateLabel, filteredJobs, displayValue, formatDescriptions} from "./model.mjs";
+import {states, active, attention, escapeHtml as esc, extension, bytes, dateLabel, filteredJobs, displayValue, formatDescriptions, clipId, addDiagnostic, eventTimeLabel} from "./model.mjs";
 
 const paths = {
   layers:'<path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5M3 16l9 5 9-5"/>',
@@ -23,9 +23,10 @@ const icon = name => `<svg viewBox="0 0 24 24" aria-hidden="true">${paths[name] 
 document.querySelectorAll("[data-icon]").forEach(node => { node.innerHTML = icon(node.dataset.icon); });
 const $ = id => document.getElementById(id);
 const state = {connected:false, syncError:false, session:0, caps:null, jobs:[], hasMore:false, selected:null, external:null,
-  results:new Map(), detailError:null, loadingResult:false, tab:"content", filter:"all", search:"", view:"workspace", blockLimit:20, lastSync:null, uploading:false};
+  results:new Map(), detailError:null, loadingResult:false, tab:"content", filter:"all", search:"", view:"workspace", blockLimit:20, lastSync:null, uploading:false,
+  diagnostics:[], diagnosticOpen:false};
 const objectUrls = new Map();
-let pollTimer, toastTimer, refreshPromise, selectionVersion = 0;
+let pollTimer, toastTimer, refreshPromise, selectionVersion = 0, diagnosticTrigger = null;
 
 function toast(message, error = false) {
   $("toast").textContent = message;
@@ -35,6 +36,38 @@ function toast(message, error = false) {
   toastTimer = setTimeout(() => { $("toast").hidden = true; }, error ? 8000 : 4000);
 }
 function announce(message) { $("announcer").textContent = message; }
+function logDiagnostic(kind, message, detail = "") {
+  state.diagnostics = addDiagnostic(state.diagnostics, {kind, message, detail});
+  if (state.diagnosticOpen) renderDiagnostic();
+}
+function diagnosticFacts(job, result) {
+  const source = job?.source || {};
+  const artifacts = result?.artifacts || [];
+  return [
+    ["任务 ID", job?.id], ["来源 ID", job?.source_id || source.id], ["目标", job?.target || "后端未提供"],
+    ["状态", states[job?.state]?.label || job?.state || "未知"], ["创建时间", dateLabel(job?.created_at)],
+    ["结果 artifact", job?.result_artifact_id || "尚未发布"], ["coverage 单元", result ? String(result.coverage?.length || 0) : "结果未加载"],
+    ["issues", result ? String(result.issues?.length || 0) : "结果未加载"], ["产物数量", result ? String(artifacts.length) : "结果未加载"],
+  ];
+}
+function renderDiagnostic() {
+  const drawer = $("diagnostic-drawer");
+  if (!drawer) return;
+  drawer.hidden = !state.diagnosticOpen;
+  document.querySelectorAll(".diagnostic-toggle").forEach(button => button.setAttribute("aria-expanded", String(state.diagnosticOpen)));
+  if (!state.diagnosticOpen) return;
+  const job = selectedJob();
+  const result = job && resultFor(job);
+  const facts = diagnosticFacts(job, result);
+  $("diagnostic-content").innerHTML = `<div class="diagnostic-head"><div><span class="section-kicker mono">LOCAL DIAGNOSTICS</span><h3 id="diagnostic-title">任务诊断</h3><p>只读显示当前页面已获得的事实。</p></div><button class="icon-button" data-action="close-diagnostics" aria-label="关闭任务诊断">${icon("close")}</button></div>${job ? `<dl class="diagnostic-facts">${facts.map(([label,value]) => `<div><dt>${esc(label)}</dt><dd>${esc(value)}</dd>${value && /ID|artifact/.test(label) ? `<button class="text-button diagnostic-copy" data-copy-id="${esc(value)}" aria-label="复制${esc(label)}">${icon("copy")}</button>` : ""}</div>`).join("")}</dl><div class="diagnostic-gap"><span>${icon("alert")}</span><div><strong>后端未提供</strong><p>阶段事件、耗时、费用、心跳和远端 Provider 账目不会由前端估算。</p></div></div>` : `<div class="diagnostic-empty">选择任务后查看其事实、证据链和同步记录。</div>`}<div class="diagnostic-events"><div class="diagnostic-events-head"><h4>页面同步记录</h4><span>${state.diagnostics.length} / 100</span></div>${state.diagnostics.length ? `<ol>${state.diagnostics.slice().reverse().map(event => `<li><time>${esc(eventTimeLabel(event.at))}</time><span class="diagnostic-kind">${esc(event.kind)}</span><p>${esc(event.message)}${event.detail ? `<small>${esc(event.detail)}</small>` : ""}</p></li>`).join("")}</ol>` : `<p class="table-note">尚无页面事件。</p>`}</div>`;
+}
+function toggleDiagnostic(open = !state.diagnosticOpen) {
+  if (open) diagnosticTrigger = document.activeElement;
+  state.diagnosticOpen = open;
+  renderDiagnostic();
+  if (open) $("diagnostic-drawer")?.scrollIntoView({block:"nearest"});
+  else if (diagnosticTrigger?.focus) queueMicrotask(() => diagnosticTrigger.focus());
+}
 function errorMessage(data, fallback) {
   return data?.error?.message || (typeof data?.detail === "string" ? data.detail : fallback);
 }
@@ -95,10 +128,10 @@ function renderJobs() {
     $("task-list").innerHTML = `<div class="list-empty"><span class="empty-symbol">${icon(connected ? "search" : "link")}</span><h3>${connected ? searching ? "没有匹配的任务" : "从第一份资料开始" : "正在连接本地服务"}</h3><p>${connected ? searching ? "试试其他名称或状态；更早的记录可按完整任务 ID 打开。" : "提交一份资料，在这里观察它的状态、内容与出处。" : "服务启动后自动读取任务与证据，无需登录。"}</p>${!connected ? '<button class="button quiet" data-action="connect">重试连接</button>' : ""}</div>`;
     return;
   }
-  $("task-list").innerHTML = `<div class="table-labels"><span>资料名称</span><span>任务状态</span><span class="date-label">创建时间</span><span></span></div>` + jobs.map(job => {
+  $("task-list").innerHTML = `<div class="table-labels" aria-hidden="true"><span>资料名称</span><span>任务状态</span><span class="date-label">创建时间</span><span></span></div><ul class="task-items" aria-label="解析任务">` + jobs.map(job => {
     const source = job.source || {};
-    return `<button class="task-row${job.id === state.selected ? " selected" : ""}" data-job="${esc(job.id)}" aria-pressed="${job.id === state.selected}"><span class="file-cell">${fileIcon(source.filename)}<span class="file-info"><span class="filename">${esc(source.filename || job.source_id)}</span><span class="file-meta">${esc(bytes(source.size_bytes))} <span aria-hidden="true">·</span> ${esc(job.id.slice(0,8))}</span></span></span>${badge(job.state)}<span class="task-date">${esc(dateLabel(job.created_at))}</span>${icon("right")}</button>`;
-  }).join("");
+    return `<li><button class="task-row${job.id === state.selected ? " selected" : ""}" data-job="${esc(job.id)}" aria-pressed="${job.id === state.selected}"><span class="file-cell">${fileIcon(source.filename)}<span class="file-info"><span class="filename">${esc(source.filename || job.source_id)}</span><span class="file-meta">${esc(bytes(source.size_bytes))} <span aria-hidden="true">·</span> ${esc(job.id.slice(0,8))}</span></span></span>${badge(job.state)}<span class="task-date">${esc(dateLabel(job.created_at))}</span>${icon("right")}</button></li>`;
+  }).join("") + `</ul>`;
 }
 function renderCapabilities() {
   if (!state.connected) {
@@ -280,6 +313,7 @@ function renderInspector() {
   const job = selectedJob();
   if (!job) {
     $("inspector-content").innerHTML = `<div class="inspector-empty"><span class="empty-symbol">${icon("layers")}</span><h2 id="inspector-title">从一份资料，看见全貌。</h2><p>选择左侧任务，检查解析内容、<br>来源位置，以及尚未完成的部分。</p><span class="micro-label">SOURCE → STRUCTURE → EVIDENCE</span></div>`;
+    renderDiagnostic();
     return;
   }
   const source = job.source || {};
@@ -288,9 +322,10 @@ function renderInspector() {
   const returned = Boolean(job.result_artifact_id);
   const completed = !active(job.state);
   const summary = result ? ({completed:`已保留 ${result.blocks.length} 个内容块，来源可追溯。`,partial:"已保留可用证据，仍有需要关注的解析缺口。",failed:"结果明确报告失败，请查看问题与原件。"}[result.status]) : "";
-  $("inspector-content").innerHTML = `<div class="detail-header"><div class="detail-topline"><span class="section-kicker mono">EVIDENCE INSPECTOR</span>${badge(job.state)}</div><div class="detail-title-line">${fileIcon(source.filename)}<div><h2 id="inspector-title">${esc(source.filename || job.source_id)}</h2><p>${esc(extension(source.filename).toUpperCase())} · ${esc(bytes(source.size_bytes))} · 原生提取</p></div></div><div class="detail-id">${esc(job.id)}<button data-copy-id="${esc(job.id)}" aria-label="复制任务 ID">${icon("copy")}</button></div></div><div class="task-track"><span class="track-step done"><i>✓</i>原件已接收</span><span class="track-join"></span><span class="track-step ${completed?"done":"active"}"><i>${completed?"✓":"2"}</i>${job.state === "queued" ? "等待执行" : job.state === "running" ? "正在解析" : job.state === "cancelled" ? "任务已取消" : "任务已返回"}</span><span class="track-join"></span><span class="track-step ${returned?"done":""}"><i>${returned?"✓":"3"}</i>${returned?"结果已发布":"结果未发布"}</span></div>${summary ? `<div class="result-summary ${result.status === "partial" ? "partial" : result.status === "failed" ? "failed" : ""}">${icon(result.status === "completed" ? "check" : "alert")}<span>${summary}</span></div>` : ""}<div class="detail-tabs" role="tablist" aria-label="结果视图">${[["content","内容",result?.blocks.length],["issues","覆盖与问题",result?.issues.length],["raw","原始结果",null]].map(([id,label,count])=>`<button role="tab" id="detail-tab-${id}" aria-controls="detail-panel" tabindex="${state.tab===id?0:-1}" aria-selected="${state.tab===id}" data-tab="${id}" class="${state.tab===id?"active":""}">${label}${Number.isFinite(count)?`<small>${count}</small>`:""}</button>`).join("")}</div><div class="detail-body" id="detail-panel" role="tabpanel" aria-labelledby="detail-tab-${state.tab}">${resultBody(job,result)}</div><div class="detail-actions"><button class="text-button" data-download-source="${esc(source.id || job.source_id)}">${icon("download")}下载原件</button>${active(job.state) ? `<button class="text-button" data-cancel="${esc(job.id)}">取消任务 ${icon("close")}</button>` : result ? `<button class="text-button" data-action="download-result">完整结果 JSON ${icon("download")}</button>` : ""}</div>`;
+  $("inspector-content").innerHTML = `<div class="detail-header"><div class="detail-topline"><span class="section-kicker mono">EVIDENCE INSPECTOR</span><span class="detail-tools">${badge(job.state)}<button class="text-button diagnostic-toggle" data-action="toggle-diagnostics" aria-expanded="${state.diagnosticOpen}">${icon("settings")}诊断</button></span></div><div class="detail-title-line">${fileIcon(source.filename)}<div><h2 id="inspector-title">${esc(source.filename || job.source_id)}</h2><p>${esc(extension(source.filename).toUpperCase())} · ${esc(bytes(source.size_bytes))} · 原生提取</p></div></div><div class="detail-id">${esc(job.id)}<button data-copy-id="${esc(job.id)}" aria-label="复制任务 ID">${icon("copy")}</button></div></div><div class="task-track"><span class="track-step done"><i>✓</i>原件已接收</span><span class="track-join"></span><span class="track-step ${completed?"done":"active"}"><i>${completed?"✓":"2"}</i>${job.state === "queued" ? "等待执行" : job.state === "running" ? "正在解析" : job.state === "cancelled" ? "任务已取消" : "任务已返回"}</span><span class="track-join"></span><span class="track-step ${returned?"done":""}"><i>${returned?"✓":"3"}</i>${returned?"结果已发布":"结果未发布"}</span></div>${summary ? `<div class="result-summary ${result.status === "partial" ? "partial" : result.status === "failed" ? "failed" : ""}">${icon(result.status === "completed" ? "check" : "alert")}<span>${summary}</span></div>` : ""}<div class="detail-tabs" role="tablist" aria-label="结果视图">${[["content","内容",result?.blocks.length],["issues","覆盖与问题",result?.issues.length],["raw","原始结果",null]].map(([id,label,count])=>`<button role="tab" id="detail-tab-${id}" aria-controls="detail-panel" tabindex="${state.tab===id?0:-1}" aria-selected="${state.tab===id}" data-tab="${id}" class="${state.tab===id?"active":""}">${label}${Number.isFinite(count)?`<small>${count}</small>`:""}</button>`).join("")}</div><div class="detail-body" id="detail-panel" role="tabpanel" aria-labelledby="detail-tab-${state.tab}">${resultBody(job,result)}</div><div class="detail-actions"><button class="text-button" data-download-source="${esc(source.id || job.source_id)}">${icon("download")}下载原件</button>${active(job.state) ? `<button class="text-button" data-cancel="${esc(job.id)}">取消任务 ${icon("close")}</button>` : result ? `<button class="text-button" data-action="download-result">完整结果 JSON ${icon("download")}</button>` : ""}</div>`;
   const detailBody = document.querySelector(".detail-body");
   if (detailBody) detailBody.scrollTop = previousScroll;
+  renderDiagnostic();
 }
 async function loadSelection() {
   const job = selectedJob();
@@ -300,13 +335,15 @@ async function loadSelection() {
   state.detailError = null;
   if (!job?.result_artifact_id || resultFor(job)) { state.loadingResult=false; renderInspector(); return; }
   state.loadingResult = true; renderInspector();
+  logDiagnostic("结果", "正在读取任务结果", clipId(job.id));
   const session = state.session;
   try {
     const result = await request(`/v1/jobs/${encodeURIComponent(job.id)}/result`);
     if (session !== state.session) return;
     state.results.set(`${job.id}:${job.result_artifact_id}`,result);
+    logDiagnostic("结果", "任务结果已加载", `${clipId(job.id)} · ${result.blocks?.length || 0} 个内容块`);
     while (state.results.size > 6) state.results.delete(state.results.keys().next().value);
-  } catch (error) { if (version === selectionVersion) state.detailError = error.message; }
+  } catch (error) { if (version === selectionVersion) { state.detailError = error.message; logDiagnostic("错误", "任务结果读取失败", error.message); } }
   finally { if (version === selectionVersion && session === state.session) { state.loadingResult=false; renderInspector(); } }
 }
 function selectJob(id) {
@@ -326,6 +363,7 @@ async function refresh() {
   if (refreshPromise) return refreshPromise;
   const session = state.session;
   refreshPromise = (async () => {
+    logDiagnostic("同步", "开始刷新任务列表");
     $("refresh").disabled = true;
     try {
       const listing = await request("/v1/jobs?limit=100");
@@ -333,12 +371,14 @@ async function refresh() {
       state.jobs = listing.items; state.hasMore = listing.has_more;
       if (state.external?.id === state.selected && !state.jobs.some(job => job.id === state.selected)) state.external = {...state.external,...await request(`/v1/jobs/${encodeURIComponent(state.selected)}`)};
       state.lastSync = Date.now(); state.syncError=false; $("global-error").hidden = true;
+      logDiagnostic("同步", "任务列表已刷新", `${listing.items.length} 项`);
       if (!state.selected && state.jobs.length) state.selected = state.jobs[0].id;
       renderConnection(); renderJobs(); await loadSelection();
     } catch (error) {
       if (session !== state.session) return;
       $("global-error").textContent = `${error.message} 当前显示的是上次成功同步的记录。`;
       state.syncError=true; $("global-error").hidden = false; renderConnection();
+      logDiagnostic("错误", "任务列表刷新失败", error.message);
       
     } finally { $("refresh").disabled = false; refreshPromise = null; schedulePoll(); }
   })();
@@ -347,10 +387,12 @@ async function refresh() {
 async function openJob(id) {
   if (!state.connected) { showConnection(); return; }
   const session = state.session;
+  logDiagnostic("导航", "正在打开任务", clipId(id));
   const job = await request(`/v1/jobs/${encodeURIComponent(id)}`);
   const source = await request(`/v1/sources/${encodeURIComponent(job.source_id)}`);
   if (session !== state.session) return;
   state.external = {...job,source}; switchView("workspace"); selectJob(id);
+  logDiagnostic("导航", "任务已打开", clipId(id));
 }
 function saveBlob(blob, name) {
   const url = URL.createObjectURL(blob);
@@ -379,18 +421,18 @@ async function upload(files) {
     for (const [index,file] of files.entries()) {
       if (session !== state.session) break;
       $("upload-state").textContent = `正在提交 ${index+1} / ${files.length}：${file.name}`;
-      const source = await request(`/v1/sources?filename=${encodeURIComponent(file.name)}`,{method:"POST",body:file});
+       const source = await request(`/v1/sources?filename=${encodeURIComponent(file.name)}`,{method:"POST",body:file});
       if (session !== state.session) break;
       let job;
       try { job = await request("/v1/jobs",{method:"POST",body:{source_id:source.id,idempotency_key:crypto.randomUUID()}}); }
       catch(error) { throw new Error(`原件已上传，但任务创建未确认。来源 ID：${source.id}。${error.message}`); }
-      submitted++; lastId=job.id;
+       submitted++; lastId=job.id; logDiagnostic("上传", "已提交解析任务", `${file.name} · ${clipId(job.id)}`);
     }
     if (session === state.session) {
       await refresh(); if (lastId) selectJob(lastId);
       toast(`已提交 ${submitted} 项任务，等待 worker 执行。`); announce(`已提交 ${submitted} 项解析任务`);
     }
-  } catch(error) { toast(`${submitted ? `已成功提交 ${submitted} 项。` : ""}${error.message}`,true); await refresh(); }
+  } catch(error) { logDiagnostic("错误", "上传或提交失败", error.message); toast(`${submitted ? `已成功提交 ${submitted} 项。` : ""}${error.message}`,true); await refresh(); }
   finally { state.uploading=false; $("upload-state").hidden=true; $("choose-file").disabled=false; $("new-parse").disabled=false; $("file-input").value=""; }
 }
 function resetWorkspace() {
@@ -398,7 +440,7 @@ function resetWorkspace() {
   $("model-api-key").value="";$("model-key-state").textContent="尚未读取";
   $("model-saved-summary").textContent="服务就绪后显示当前已保存的渠道。";modelNotice("");
   state.session++; state.connected=false; state.syncError=false; state.caps=null; state.jobs=[]; state.hasMore=false; state.external=null; state.selected=null;
-  state.results.clear(); state.lastSync=null; state.detailError=null; state.loadingResult=false;
+  state.results.clear(); state.lastSync=null; state.detailError=null; state.loadingResult=false; state.diagnostics=[]; state.diagnosticOpen=false;
   clearTimeout(pollTimer); selectionVersion++;
   objectUrls.forEach(url=>URL.revokeObjectURL(url)); objectUrls.clear();
   $("global-error").hidden=true;
@@ -410,12 +452,14 @@ let connecting = false;
 async function connectWorkspace() {
   if (connecting) return;
   connecting = true;
+  logDiagnostic("连接", "正在连接本地服务");
   try {
     const [caps, listing] = await Promise.all([request("/v1/capabilities"),request("/v1/jobs?limit=100")]);
     resetWorkspace(); state.connected=true; state.caps=caps; state.jobs=listing.items; state.hasMore=listing.has_more; state.lastSync=Date.now();
     const hashId = new URLSearchParams(location.hash.slice(1)).get("job");
     state.selected=state.jobs.find(job=>job.id===hashId)?.id || state.jobs[0]?.id || null;
     renderConnection();renderJobs();renderCapabilities();loadSelection();schedulePoll();
+    logDiagnostic("连接", "本地服务已连接", `schema ${caps.schema_version || "未知"}`);
     if(state.view==="models")loadModelSettings();
     if(hashId && hashId!==state.selected)openJob(hashId).catch(()=>toast("链接中的任务未找到，已显示最近记录。",true));
   } catch(error) {
@@ -423,6 +467,7 @@ async function connectWorkspace() {
     $("global-error").hidden=false;
     state.syncError=true;renderConnection();
     modelNotice(error.message,true);
+    logDiagnostic("错误", "连接本地服务失败", error.message);
   } finally { connecting=false; }
 }
 $("connection-status").addEventListener("click",showConnection);
@@ -456,13 +501,15 @@ document.addEventListener("click",async event=>{
     if(button.dataset.filter){state.filter=button.dataset.filter;renderJobs();}
     if(button.dataset.job)selectJob(button.dataset.job);
     if(button.dataset.tab){state.tab=button.dataset.tab;renderInspector();}
+    if(button.dataset.action==="toggle-diagnostics")toggleDiagnostic();
+    if(button.dataset.action==="close-diagnostics")toggleDiagnostic(false);
     if(button.dataset.action==="connect")showConnection();
     if(button.dataset.action==="retry-result")loadSelection();
     if(button.dataset.action==="more-blocks"){state.blockLimit+=20;const body=document.querySelector(".detail-body");const top=body?.scrollTop||0;renderInspector();document.querySelector(".detail-body").scrollTop=top;}
     if(button.dataset.action==="download-result"){const job=selectedJob();const result=job&&resultFor(job);if(result)saveBlob(new Blob([JSON.stringify(result,null,2)],{type:"application/json"}),`knoa-${job.id}.json`);}
     if(button.dataset.downloadSource||button.dataset.downloadArtifact){button.disabled=true;try{await downloadArtifact(button.dataset.downloadSource||button.dataset.downloadArtifact);}finally{button.disabled=false;}}
-    if(button.dataset.copyId){await navigator.clipboard.writeText(button.dataset.copyId);toast("已复制任务 ID。");}
-    if(button.dataset.cancel){button.disabled=true;await request(`/v1/jobs/${encodeURIComponent(button.dataset.cancel)}/cancel`,{method:"POST"});await refresh();toast("取消请求已提交。");}
+    if(button.dataset.copyId){await navigator.clipboard.writeText(button.dataset.copyId);logDiagnostic("操作", "已复制标识", clipId(button.dataset.copyId));toast("已复制标识。");}
+    if(button.dataset.cancel){button.disabled=true;logDiagnostic("任务", "正在提交取消请求", clipId(button.dataset.cancel));await request(`/v1/jobs/${encodeURIComponent(button.dataset.cancel)}/cancel`,{method:"POST"});await refresh();logDiagnostic("任务", "取消请求已提交", clipId(button.dataset.cancel));toast("取消请求已提交。");}
     if(button.dataset.loadImage){
       button.disabled=true;const session=state.session;
       try{const {blob,type}=await request(`/v1/artifacts/${encodeURIComponent(button.dataset.loadImage)}`,{raw:true});

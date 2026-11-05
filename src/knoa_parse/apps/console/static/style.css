@@ -2524,3 +2524,64 @@ dialog input::placeholder  {
 #open-model-settings { margin-top:16px; }
 @media(max-width:1000px) { .model-settings-layout { grid-template-columns:1fr; }.model-settings-aside { padding:0 10px; } }
 @media(max-width:600px) { .model-settings-card { padding:20px; }.model-field-grid { grid-template-columns:1fr; gap:0; }.model-settings-actions { align-items:stretch; }.model-settings-actions .button { width:100%; } }
+
+/* Workbench V2: quiet hierarchy, evidence first. */
+:root {
+  --space-1:4px;
+  --space-2:8px;
+  --space-3:12px;
+  --space-4:16px;
+  --space-5:24px;
+  --space-6:32px;
+  --space-7:48px;
+  --surface-raised:#fffefa;
+  --shadow-soft:0 10px 30px rgba(42,63,43,.045);
+  --shadow-focus:0 0 0 4px rgba(112,145,101,.15);
+}
+main { max-width:1840px; }
+.task-panel,.inspector,.model-settings-card { border-radius:18px; box-shadow:var(--shadow-soft); }
+.task-items { list-style:none; padding:0; margin:0; }
+.task-items > li { margin:0; padding:0; }
+.task-row { border-radius:0; }
+.task-row:focus-visible { z-index:2; outline:3px solid rgba(94,132,87,.35); outline-offset:-3px; }
+.detail-tools { display:inline-flex; align-items:center; gap:10px; }
+.diagnostic-toggle { border:1px solid transparent; border-radius:7px; padding:5px 7px; }
+.diagnostic-toggle[aria-expanded="true"] { color:var(--pine); border-color:#dce5d5; background:#f2f6ed; }
+.diagnostic-toggle svg { width:13px; height:13px; }
+.diagnostic-drawer { border-top:1px solid #e9eee4; background:linear-gradient(180deg,#fbfcf8,#fff); padding:20px 22px 22px; }
+.diagnostic-head { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; }
+.diagnostic-head h3 { margin:7px 0 4px; font-size:15px; font-weight:550; letter-spacing:-.2px; }
+.diagnostic-head p { margin:0; color:#7b8976; font-size:11px; line-height:1.7; }
+.diagnostic-facts { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1px 18px; margin:18px 0; border-top:1px solid #edf1e9; }
+.diagnostic-facts > div { position:relative; min-width:0; padding:10px 22px 10px 0; border-bottom:1px solid #edf1e9; }
+.diagnostic-facts dt { color:#84917f; font-size:10px; letter-spacing:.4px; }
+.diagnostic-facts dd { margin:5px 0 0; color:#354336; font:10px var(--mono); overflow-wrap:anywhere; }
+.diagnostic-copy { position:absolute; top:22px; right:0; padding:2px; }
+.diagnostic-copy svg { width:12px; height:12px; }
+.diagnostic-gap { display:flex; gap:10px; padding:12px; border:1px solid #ecefe5; border-radius:10px; background:#fafbf7; color:#7f8b78; }
+.diagnostic-gap svg { width:16px; height:16px; color:#af8b4d; }
+.diagnostic-gap strong { display:block; color:#5f6e5a; font-size:11px; font-weight:550; }
+.diagnostic-gap p { margin:4px 0 0; font-size:10px; line-height:1.7; }
+.diagnostic-events { margin-top:22px; }
+.diagnostic-events-head { display:flex; justify-content:space-between; align-items:center; }
+.diagnostic-events h4 { margin:0; color:#53634f; font-size:11px; font-weight:550; }
+.diagnostic-events-head > span { color:#9aa795; font:9px var(--mono); }
+.diagnostic-events ol { list-style:none; margin:10px 0 0; padding:0 0 0 4px; max-height:220px; overflow:auto; border-left:1px solid #e4eadf; }
+.diagnostic-events li { position:relative; display:grid; grid-template-columns:52px 48px minmax(0,1fr); gap:8px; padding:6px 0 6px 12px; font-size:10px; }
+.diagnostic-events li:before { content:""; position:absolute; left:-4px; top:11px; width:7px; height:7px; border:2px solid #fff; border-radius:50%; background:#8aa17e; }
+.diagnostic-events time,.diagnostic-kind { color:#9ba797; font:9px var(--mono); }
+.diagnostic-kind { color:#718468; }
+.diagnostic-events p { margin:0; color:#53634f; overflow-wrap:anywhere; }
+.diagnostic-events small { display:block; color:#899587; margin-top:3px; line-height:1.5; }
+.diagnostic-empty { padding:18px 0; color:#7e8b79; font-size:11px; line-height:1.7; }
+.detail-tabs > button:focus-visible { outline:3px solid rgba(112,145,101,.2); outline-offset:3px; }
+.button,.icon-button,.text-button,.filters>button,.connection-pill { transition:background-color .18s ease,color .18s ease,border-color .18s ease,box-shadow .18s ease,transform .18s ease; }
+@media (min-width:1024px) {
+  .workbench { grid-template-columns:minmax(470px,1.12fr) minmax(420px,1fr); gap:24px; }
+  .task-panel,.inspector { min-height:560px; }
+  .task-list { max-height:600px; }
+  .diagnostic-drawer { max-height:430px; overflow:auto; }
+}
+@media (max-width:760px) {
+  .diagnostic-facts { grid-template-columns:1fr; }
+}
