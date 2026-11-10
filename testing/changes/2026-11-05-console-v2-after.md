@@ -1,5 +1,7 @@
 # 开发后不确定项：Knoa Parse 工作台 V2
 
+2026-11-10 复验补充：本文件保留 11 月 5 日的历史结果；桌面三尺寸、键盘 tab/焦点、合成凭据和下载摘要已有新的真实浏览器证据，见 [review 修复记录](../records/2026-11-10-console-review.md)。不同 DPI、屏幕阅读器和真实复杂资料仍未验收，见 [当前不确定项](2026-11-10-console-review-after.md)。
+
 日期/版本：2026-11-05；关联开发前需求：[2026-11-05-console-v2-before.md](2026-11-05-console-v2-before.md)；负责人：Knoa Parse。
 
 ## 已验证事实

@@ -30,18 +30,36 @@ export const clipId = (value, size = 12) => {
   const edge = Math.max(3, Math.floor((size - 1) / 2));
   return `${text.slice(0, edge)}…${text.slice(-edge)}`;
 };
-export const diagnosticMessage = value => String(value ?? "")
-  .replace(/Bearer\s+[^\s]+/gi, "Bearer [已隐藏]")
-  .replace(/(api[_-]?key|token|secret|password)\s*[:=]\s*[^\s,;]+/gi, "$1=[已隐藏]");
+const diagnosticKinds = new Set(["info", "sync", "error", "connection", "navigation", "upload", "task", "action", "result",
+  "信息", "同步", "错误", "连接", "导航", "上传", "任务", "操作", "结果", "来源"]);
+const secretName = String.raw`(?:authorization|(?:x[-_])?api[-_ ]?key|(?:access[-_]|refresh[-_])?token|(?:client[-_])?secret|password)`;
+const secretAssignment = new RegExp(String.raw`((?<![\w-])\b${secretName}\b["']?\s*[:=]\s*)("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|[^,;\r\n}&]+)`, "gi");
+const secretWhitespace = new RegExp(String.raw`((?<![\w-])\b${secretName}\b\s+)("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|[^,;\r\n}&]+)`, "gi");
+export function diagnosticMessage(value, maxLength = 256) {
+  // This is defense in depth. Callers must log controlled summaries, never raw
+  // request/response bodies, credentials, filenames or document content.
+  const text = ["string", "number", "boolean"].includes(typeof value) ? String(value) : "";
+  const bounded = text.slice(0, 8192)
+    .replace(/\b([a-z][a-z\d+.-]*:\/\/)[^\s/?#]*@/gi, "$1[已隐藏]@")
+    .replace(secretAssignment, "$1[已隐藏]")
+    .replace(secretWhitespace, "$1[已隐藏]")
+    .replace(/Bearer\s+("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|[^\s,;]+)/gi, "Bearer [已隐藏]");
+  const limit = Number.isFinite(maxLength) ? Math.max(1, Math.min(256, Math.floor(maxLength))) : 256;
+  return bounded.length > limit ? `${bounded.slice(0, limit - 1)}…` : bounded;
+}
+let diagnosticSequence = 0;
 export function addDiagnostic(events, event, limit = 100) {
-  const next = [...events, {
-    id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-    at: Date.now(),
-    kind: String(event?.kind || "info"),
-    message: diagnosticMessage(event?.message || "未命名事件"),
-    detail: diagnosticMessage(event?.detail || ""),
-  }];
-  return next.slice(-Math.max(1, limit));
+  const capacity = Number.isFinite(limit) ? Math.max(1, Math.min(100, Math.floor(limit))) : 100;
+  const now = Date.now();
+  const normalize = (item, previous = false) => ({
+    id: previous && /^\d{13}-\d+$/.test(item?.id) ? item.id : `${now}-${++diagnosticSequence}`,
+    at: previous && Number.isFinite(item?.at) ? item.at : now,
+    kind: diagnosticKinds.has(item?.kind) ? item.kind : "info",
+    message: diagnosticMessage(item?.message || "未命名事件", 160),
+    detail: diagnosticMessage(item?.detail || "", 256),
+  });
+  const retained = capacity > 1 && Array.isArray(events) ? events.slice(-(capacity - 1)).map(item => normalize(item, true)) : [];
+  return [...retained, normalize(event)];
 }
 export const eventTimeLabel = timestamp => {
   if (!Number.isFinite(timestamp)) return "时间未知";

@@ -36,3 +36,45 @@ test("diagnostic values stay bounded and redact credentials", () => {
   assert.equal(events[0].message, "event-5");
   assert.match(eventTimeLabel(events.at(-1).at), /^\d{2}:\d{2}:\d{2}$/);
 });
+test("diagnostics redact quoted, whitespace, header and URL credentials", () => {
+  const inputs = [
+    '{"api_key":"synthetic secret with spaces", "message":"failure"}',
+    "{'client_secret': 'synthetic secret with spaces'}",
+    '"Authorization": "Bearer synthetic-key with-spaces"',
+    "Authorization: Basic c3ludGhldGljLWtleQ==",
+    "x-api-key='synthetic secret with spaces'",
+    "password=synthetic secret with spaces; operation failed",
+    "secret synthetic secret with spaces",
+    "https://synthetic-user:synthetic-password@example.test/v1?api_key=synthetic-key&task=one",
+    "https://example.test/v1?access_token=synthetic-key&task=one",
+    'Bearer "synthetic secret with spaces"',
+  ];
+  for (const value of inputs) {
+    const redacted = diagnosticMessage(value);
+    assert.ok(!/synthetic|c3ludGhldGlj/i.test(redacted), `${value} -> ${redacted}`);
+    assert.match(redacted, /已隐藏/);
+  }
+  assert.equal(diagnosticMessage({api_key:"synthetic-key"}), "");
+  assert.equal(diagnosticMessage("安全摘要"), "安全摘要");
+  assert.equal(diagnosticMessage("x".repeat(10000)).length, 256);
+});
+test("diagnostic buffers enforce count, field and metadata boundaries", () => {
+  const malicious = {id:'<img onerror="alert(1)">', at:-1, kind:"untrusted-kind", message:"m".repeat(1000), detail:"d".repeat(1000), api_key:"synthetic-key"};
+  const entry = addDiagnostic([], malicious)[0];
+  assert.match(entry.id, /^\d{13}-\d+$/);
+  assert.ok(entry.at > 0);
+  assert.equal(entry.kind, "info");
+  assert.equal(entry.message.length, 160);
+  assert.equal(entry.detail.length, 256);
+  assert.ok(!Object.hasOwn(entry, "api_key"));
+  for (const limit of [undefined, 0, -10, NaN, Infinity, 10000, .5]) {
+    let events = [];
+    for (let index = 0; index < 110; index += 1) events = addDiagnostic(events, {kind:"同步", message:`event-${index}`}, limit);
+    assert.ok(events.length >= 1 && events.length <= 100, `invalid buffer size for ${limit}`);
+    assert.equal(events.at(-1).message, "event-109");
+  }
+  assert.equal(addDiagnostic(null, {kind:"错误", message:"安全摘要"}).length, 1);
+  const [retained] = addDiagnostic([{...malicious, kind:"错误"}], {kind:"同步", message:"new"});
+  assert.equal(retained.message.length, 160);
+  assert.equal(retained.detail.length, 256);
+});

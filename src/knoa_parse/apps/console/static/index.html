@@ -19,7 +19,7 @@
     </a>
     <div class="workspace-label">工作空间 <span>LOCAL</span></div>
     <nav aria-label="主导航">
-      <button class="nav-item active" data-view="workspace" aria-label="解析工作台"><span data-icon="layers"></span><span>解析工作台</span><span class="nav-dot"></span></button>
+      <button class="nav-item active" data-view="workspace" aria-current="page" aria-label="解析工作台"><span data-icon="layers"></span><span>解析工作台</span><span class="nav-dot"></span></button>
       <button class="nav-item" data-view="capabilities" aria-label="能力清单"><span data-icon="grid"></span><span>能力清单</span></button>
       <button class="nav-item" data-view="models" aria-label="模型服务"><span data-icon="settings"></span><span>模型服务</span></button>
     </nav>
@@ -63,7 +63,7 @@
           <section class="task-panel" aria-labelledby="task-title">
             <div class="panel-heading"><div><h2 id="task-title">解析记录 <span id="task-count" class="count-bubble">0</span></h2><p>从每一次输入，回到每一份证据。</p></div><button id="import-job" class="text-button" title="按完整任务 ID 打开"><span data-icon="link"></span>打开任务</button></div>
             <div class="task-toolbar"><div class="filters" role="group" aria-label="任务状态筛选"><button data-filter="all" class="active">全部</button><button data-filter="active">处理中</button><button data-filter="attention">需关注</button></div><div class="search-wrap"><span data-icon="search"></span><input id="search" type="search" placeholder="搜索名称或任务 ID" aria-label="搜索名称或任务 ID"><kbd>Ctrl K</kbd></div></div>
-            <div id="task-list" class="task-list" aria-live="polite"></div>
+            <div id="task-list" class="task-list"></div>
             <div class="list-footer"><span id="list-scope">等待连接后读取任务</span><span class="live-label"><i></i><span id="live-label">未同步</span></span></div>
           </section>
           <section class="inspector" aria-labelledby="inspector-title"><div id="inspector-content"></div><aside id="diagnostic-drawer" class="diagnostic-drawer" hidden aria-labelledby="diagnostic-title"><div id="diagnostic-content"></div></aside></section>

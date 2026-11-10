@@ -37,6 +37,8 @@
 当前工程：[工作台 V2 开发前需求](changes/2026-11-05-console-v2-before.md)、[开发后不确定项](changes/2026-11-05-console-v2-after.md)。
 执行摘要：[工作台 V2 执行记录](records/2026-11-05-console-v2.md)。
 
+工作台 review 修复：[开发前需求](changes/2026-11-10-console-review-before.md)、[开发后不确定项](changes/2026-11-10-console-review-after.md)、[复验记录](records/2026-11-10-console-review.md)。
+
 - 实现前创建 `testing/changes/YYYY-MM-DD-主题-before.md`，使用 [开发前模板](templates/before-development.md)。需求、样本与独立预期先于实现；任务开始时尚有疑问，先写待决事项和禁止做出的假设。
 - 工作结束创建同名前缀的 `-after.md`，使用 [开发后模板](templates/after-development.md)，单独列出不确定部分，链接原需求与自动验证证据。新增风险不能只埋在交付对话里。
 - 行为范围调整时更新 before 并记录原因；after 不得降低原验收条件来消除失败。
